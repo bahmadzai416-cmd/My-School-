@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ps" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>د مدیر پینل - پنل مدیر</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            direction: rtl;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .school-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .school-logo {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+        }
+        .principal-info {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .nav-tab.active {
+            color: #2a5298;
+            border-bottom: 3px solid #2a5298;
+            font-weight: bold;
+        }
+        .panel {
+            display: none;
+            padding: 20px;
+        }
+        .panel.active { display: block; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e3c72;
+            border-right: 4px solid #2a5298;
+            padding-right: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button.success { background: #28a745; }
+        button.danger { background: #dc3545; }
+        button.secondary { background: #6c757d; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #1e3c72; color: white; }
+        .flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .w-50 { flex: 1; min-width: 200px; }
+        .ad-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            border: 2px dashed #ccc;
+        }
+        @media print {
+            .nav-tabs, button, .no-print { display: none; }
+            .panel { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">
+        <div class="school-info">
+            <div class="school-logo" id="schoolLogo">🏫</div>
+            <div>
+                <div id="schoolName" style="font-weight: bold;">لیسه عالی معرفت افغان</div>
+                <div id="schoolPackage" style="font-size: 12px;">بسته: پریمیم - 3500 Afs/میاشت</div>
+            </div>
+        </div>
+        <div class="principal-info">
+            <span id="principalName">مدیر: احمدالله</span>
+            <button onclick="logout()" style="background: transparent; border: 1px solid white; padding: 4px 12px; margin-right: 10px;">وتلو / خروج</button>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="showPanel('dashboard')">📊 ډشبورډ</div>
+        <div class="nav-tab" onclick="showPanel('advertising')">📢 اعلانونه</div>
+        <div class="nav-tab" onclick="showPanel('teachers')">👨‍🏫 استادان</div>
+        <div class="nav-tab" onclick="showPanel('classes')">📚 صنفونه</div>
+        <div class="nav-tab" onclick="showPanel('auditing')">📋 تفتیش</div>
+        <div class="nav-tab" onclick="showPanel('settings')">⚙️ تنظیمات</div>
+    </div>
+
+    <!-- Dashboard Panel -->
+    <div id="dashboardPanel" class="panel active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudents">0</div>
+                <div class="stat-label">ټول شاگردان</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                <div class="stat-number" id="totalTeachers">0</div>
+                <div class="stat-label">ټول استادان</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                <div class="stat-number" id="totalClasses">0</div>
+                <div class="stat-label">ټول صنفونه</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                <div class="stat-number" id="monthlyFee">0</div>
+                <div class="stat-label">میاشتنی فی (Afs)</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د ښوونځي معلومات</div>
+            <div class="flex-row">
+                <div class="w-50"><strong>د ښوونځي نوم:</strong> <span id="infoSchoolName">لیسه معرفت افغان</span></div>
+                <div class="w-50"><strong>بسته:</strong> <span id="infoPackage">پریمیم</span></div>
+            </div>
+            <div class="flex-row">
+                <div class="w-50"><strong>آدرس:</strong> <span id="infoAddress">کابل، حوزه دوازدهم</span></div>
+                <div class="w-50"><strong>تلیفون:</strong> <span id="infoPhone">0780 000 000</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د تیرې میاشتې فعالیت</div>
+            <canvas id="activityChart" style="width:100%; max-height:300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Advertising Panel -->
+    <div id="advertisingPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د اعلانونو بستې / پکیج‌های تبلیغاتی</div>
+            <div class="stats-grid">
+                <div class="stat-card" style="background: linear-gradient(135deg, #6c757d, #495057); cursor: pointer;" onclick="selectAdPackage('basic')">
+                    <div class="stat-number">اساسی</div>
+                    <div class="stat-label">500 Afs / میاشت</div>
+                    <div style="font-size: 11px; margin-top: 10px;">1000 لید</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #007bff, #0056b3); cursor: pointer;" onclick="selectAdPackage('standard')">
+                    <div class="stat-number">معیاري</div>
+                    <div class="stat-label">1500 Afs / میاشت</div>
+                    <div style="font-size: 11px; margin-top: 10px;">5000 لید + عکس</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14); cursor: pointer;" onclick="selectAdPackage('premium')">
+                    <div class="stat-number">پریمیم</div>
+                    <div class="stat-label">3500 Afs / میاشت</div>
+                    <div style="font-size: 11px; margin-top: 10px;">نامحدود + ویډیو</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">فعال اعلانونه</div>
+            <div id="activeAdsList"></div>
+            <button onclick="createNewAd()" class="success" style="margin-top: 10px;">+ نوی اعلان جوړول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د اعلان لید / Preview</div>
+            <div class="ad-preview" id="adPreview">
+                <div style="font-size: 40px;">🏫</div>
+                <h3>لیسه معرفت افغان</h3>
+                <p>نوم لیکنه پیل شوه - ۲۰٪ تخفیف</p>
+                <button style="background: #28a745;">نور معلومات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teachers Panel -->
+    <div id="teachersPanel" class="panel">
+        <div class="card">
+            <div class="card-title">نوی استاد اضافه کول</div>
+            <div class="flex-row">
+                <div class="w-50"><input type="text" id="teacherName" placeholder="د استاد نوم"></div>
+                <div class="w-50"><input type="text" id="teacherUsername" placeholder="صارف نوم"></div>
+            </div>
+            <div class="flex-row">
+                <div class="w-50"><input type="password" id="teacherPassword" placeholder="پاسورډ"></div>
+                <div class="w-50"><select id="teacherClass"><option value="7">هفتم با</option><option value="8">هشتم با</option><option value="9">نهم با</option></select></div>
+            </div>
+            <div class="flex-row">
+                <div class="w-50"><select id="teacherSubject"><option value="ریاضی">ریاضی</option><option value="دری">دری</option><option value="پشتو">پشتو</option><option value="انګلیسي">انګلیسي</option><option value="ساینس">ساینس</option></select></div>
+                <div class="w-50"><input type="text" id="teacherPhone" placeholder="تلیفون"></div>
+            </div>
+            <button onclick="addTeacher()" class="success">➕ استاد اضافه کول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د استادانو لیست</div>
+            <div class="table-responsive">
+                <table id="teachersTable">
+                    <thead>
+                        <tr><th>نمبر</th><th>نوم</th><th>صارف نوم</th><th>صنف</th><th>مضمون</th><th>فعال</th><th>عملیات</th></tr>
+                    </thead>
+                    <tbody id="teachersList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Panel -->
+    <div id="classesPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د صنفونو مدیریت</div>
+            <div class="flex-row">
+                <div class="w-50"><input type="text" id="className" placeholder="د صنف نوم (مثال: هفتم با)"></div>
+                <div class="w-50"><input type="number" id="classCapacity" placeholder="د شاگردانو شمیر"></div>
+            </div>
+            <button onclick="addClass()" class="success">➕ صنف اضافه کول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د صنفونو لیست</div>
+            <div id="classesList"></div>
+        </div>
+    </div>
+
+    <!-- Auditing Panel -->
+    <div id="auditingPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د تفتیش راپورونه</div>
+            <select id="auditType">
+                <option value="attendance">د حاضری تفتیش</option>
+                <option value="marks">د نمراتو تفتیش</option>
+                <option value="finance">د مالی تفتیش</option>
+                <option value="teachers">د استادانو حاضری</option>
+            </select>
+            <select id="auditClass">
+                <option value="7">هفتم با</option>
+                <option value="8">هشتم با</option>
+                <option value="9">نهم با</option>
+                <option value="all">ټول صنفونه</option>
+            </select>
+            <button onclick="runAudit()" class="success">🔍 تفتیش پیل کړئ</button>
+            <div id="auditResult" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د تفتیش تاریخچه</div>
+            <div id="auditHistory"></div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settingsPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د ښوونځي معلومات</div>
+            <div class="flex-row">
+                <div class="w-50"><input type="text" id="settingSchoolName" placeholder="د ښوونځي نوم"></div>
+                <div class="w-50"><input type="text" id="settingSchoolAddress" placeholder="آدرس"></div>
+            </div>
+            <div class="flex-row">
+                <div class="w-50"><input type="text" id="settingSchoolPhone" placeholder="تلیفون"></div>
+                <div class="w-50"><input type="email" id="settingSchoolEmail" placeholder="بریښنالیک"></div>
+            </div>
+            <div class="form-group">
+                <label>د ښوونځي لوګو</label>
+                <input type="file" id="schoolLogoUpload" accept="image/*">
+            </div>
+            <button onclick="saveSchoolSettings()" class="success">💾 خوندي کول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د بستې بدلول</div>
+            <select id="changePackage">
+                <option value="basic">اساسی - 500 Afs/میاشت</option>
+                <option value="standard">معیاري - 1500 Afs/میاشت</option>
+                <option value="premium">پریمیم - 3500 Afs/میاشت</option>
+            </select>
+            <button onclick="changeSchoolPackage()" class="secondary">بسته بدلول</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Local Storage for demo data
+    let schoolData = {
+        name: "لیسه عالی معرفت افغان",
+        package: "premium",
+        packagePrice: 3500,
+        address: "کابل، حوزه دوازدهم تعلیمی",
+        phone: "0780 000 000",
+        email: "info@marefat.edu.af"
+    };
+
+    let teachers = [
+        { id: 1, name: "احمدالله", username: "teacher1", password: "123", class: "7", subject: "ریاضی", phone: "0780 111 111", active: true },
+        { id: 2, name: "فاطمه", username: "teacher2", password: "123", class: "7", subject: "دری", phone: "0780 222 222", active: true },
+        { id: 3, name: "محمد", username: "teacher3", password: "123", class: "8", subject: "انګلیسي", phone: "0780 333 333", active: true }
+    ];
+
+    let classes = [
+        { id: 1, name: "هفتم با", capacity: 30, students: 25 },
+        { id: 2, name: "هفتم الف", capacity: 30, students: 28 },
+        { id: 3, name: "هشتم با", capacity: 35, students: 32 },
+        { id: 4, name: "نهم با", capacity: 30, students: 27 }
+    ];
+
+    let ads = [];
+
+    function loadDashboard() {
+        document.getElementById('totalStudents').innerText = "112";
+        document.getElementById('totalTeachers').innerText = teachers.length;
+        document.getElementById('totalClasses').innerText = classes.length;
+        document.getElementById('monthlyFee').innerText = schoolData.packagePrice;
+        document.getElementById('infoSchoolName').innerText = schoolData.name;
+        document.getElementById('infoPackage').innerText = schoolData.package === 'premium' ? 'پریمیم' : (schoolData.package === 'standard' ? 'معیاري' : 'اساسی');
+        document.getElementById('infoAddress').innerText = schoolData.address;
+        document.getElementById('infoPhone').innerText = schoolData.phone;
+    }
+
+    function loadTeachers() {
+        let html = '';
+        teachers.forEach((t, idx) => {
+            html += `<tr>
+                <td>${idx+1}</td>
+                <td>${t.name}</td>
+                <td>${t.username}</td>
+                <td>${t.class}</td>
+                <td>${t.subject}</td>
+                <td>${t.active ? '✅ فعال' : '❌ غیرفعال'}</td>
+                <td><button onclick="resetTeacherPassword(${t.id})" style="padding:4px 10px;">پاسورډ بدلول</button> <button onclick="deleteTeacher(${t.id})" style="padding:4px 10px; background:#dc3545;">حذف</button></td>
+            </tr>`;
+        });
+        document.getElementById('teachersList').innerHTML = html;
+    }
+
+    function addTeacher() {
+        let name = document.getElementById('teacherName').value;
+        let username = document.getElementById('teacherUsername').value;
+        let password = document.getElementById('teacherPassword').value;
+        let classId = document.getElementById('teacherClass').value;
+        let subject = document.getElementById('teacherSubject').value;
+        let phone = document.getElementById('teacherPhone').value;
+
+        if (!name || !username) {
+            alert('لطفا نوم او صارف نوم داخل کړئ');
+            return;
+        }
+
+        let newId = teachers.length + 1;
+        teachers.push({
+            id: newId, name, username, password: password || '123',
+            class: classId, subject, phone, active: true
+        });
+        loadTeachers();
+        document.getElementById('teacherName').value = '';
+        document.getElementById('teacherUsername').value = '';
+        document.getElementById('teacherPassword').value = '';
+        document.getElementById('teacherPhone').value = '';
+        alert('استاد اضافه شو');
+    }
+
+    function loadClasses() {
+        let html = '<div class="table-responsive"><table><thead><tr><th>نمبر</th><th>د صنف نوم</th><th>ظرفیت</th><th>د شاگردانو شمیر</th><th>تش ځای</th><th>عملیات</th></tr></thead><tbody>';
+        classes.forEach((c, idx) => {
+            let emptySpots = c.capacity - c.students;
+            html += `<tr>
+                <td>${idx+1}</td>
+                <td>${c.name}</td>
+                <td>${c.capacity}</td>
+                <td>${c.students}</td>
+                <td>${emptySpots}</td>
+                <td><button onclick="deleteClass(${c.id})" style="background:#dc3545;">حذف</button></td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('classesList').innerHTML = html;
+    }
+
+    function addClass() {
+        let name = document.getElementById('className').value;
+        let capacity = document.getElementById('classCapacity').value;
+        if (!name) { alert('لطفا د صنف نوم داخل کړئ'); return; }
+        classes.push({ id: classes.length + 1, name, capacity: parseInt(capacity) || 30, students: 0 });
+        loadClasses();
+        document.getElementById('className').value = '';
+        alert('صنف اضافه شو');
+    }
+
+    function loadAds() {
+        let html = '<div class="table-responsive"><table><thead><tr><th>عنوان</th><th>تفصیل</th><th>بسته</th><th>فعال</th><th>عملیات</th></thead><tbody>';
+        ads.forEach((ad, idx) => {
+            html += `<tr>
+                <td>${ad.title}</td>
+                <td>${ad.description}</td>
+                <td>${ad.package}</td>
+                <td>${ad.active ? 'فعال' : 'غیرفعال'}</td>
+                <td><button onclick="deleteAd(${idx})">حذف</button></td>
+            </tr>`;
+        });
+        if (ads.length === 0) html += '<tr><td colspan="5">هیچ اعلان نشته</td></tr>';
+        html += '</tbody></table></div>';
+        document.getElementById('activeAdsList').innerHTML = html;
+    }
+
+    function createNewAd() {
+        let title = prompt('د اعلان عنوان:', 'نوم لیکنه');
+        let description = prompt('د اعلان تفصیل:', '۲۰٪ تخفیف');
+        if (title) {
+            ads.push({ title, description, package: 'standard', active: true, createdAt: new Date() });
+            loadAds();
+            updateAdPreview(title, description);
+        }
+    }
+
+    function updateAdPreview(title, description) {
+        document.getElementById('adPreview').innerHTML = `
+            <div style="font-size: 40px;">🏫</div>
+            <h3>${title || 'لیسه معرفت افغان'}</h3>
+            <p>${description || 'نوم لیکنه پیل شوه - ۲۰٪ تخفیف'}</p>
+            <button style="background: #28a745;">نور معلومات</button>
+        `;
+    }
+
+    function selectAdPackage(packageType) {
+        let price = packageType === 'basic' ? 500 : (packageType === 'standard' ? 1500 : 3500);
+        let packageName = packageType === 'basic' ? 'اساسی' : (packageType === 'standard' ? 'معیاري' : 'پریمیم');
+        if (confirm(`تاسو د ${packageName} بسته (${price} Afs میاشتنی) غوره کړه. غواړئ فعاله یې کړئ؟`)) {
+            alert(`د ${packageName} بسته فعاله شوه. د ${price} Afs له حساب څخه کټ کیږي.`);
+        }
+    }
+
+    function runAudit() {
+        let auditType = document.getElementById('auditType').value;
+        let auditClass = document.getElementById('auditClass').value;
+        let resultHtml = `<div class="card"><h4>د تفتیش نتیجه:</h4><p>نوع: ${auditType}</p><p>صنف: ${auditClass}</p>`;
+        
+        if (auditType === 'attendance') {
+            resultHtml += `<p>د حاضری فیصدی: ۸۵٪</p><p>غیرحاضر شاگردان: ۱۵ تن</p>`;
+        } else if (auditType === 'marks') {
+            resultHtml += `<p>د نمراتو اوسط: ۷۲٪</p><p>موفق شاگردان: ۸۰٪</p><p>ناکام شاگردان: ۲۰٪</p>`;
+        } else if (auditType === 'finance') {
+            resultHtml += `<p>ټول فیصل شوی: ${teachers.length * 5000} Afs</p><p>تادیه شوی: ${(teachers.length * 5000 * 0.8)} Afs</p>`;
+        } else if (auditType === 'teachers') {
+            resultHtml += `<p>د استادانو حاضری: ۹۰٪</p><p>غیرحاضر استادان: ۲ تن</p>`;
+        }
+        resultHtml += `<p>د تفتیش نیټه: ${new Date().toLocaleDateString()}</p></div>`;
+        document.getElementById('auditResult').innerHTML = resultHtml;
+        
+        // Add to history
+        let historyDiv = document.getElementById('auditHistory');
+        let historyItem = document.createElement('div');
+        historyItem.className = 'card';
+        historyItem.style.marginTop = '10px';
+        historyItem.innerHTML = `<p><strong>${new Date().toLocaleString()}</strong> - ${auditType} - صنف ${auditClass}</p>`;
+        historyDiv.prepend(historyItem);
+    }
+
+    function saveSchoolSettings() {
+        let name = document.getElementById('settingSchoolName').value;
+        let address = document.getElementById('settingSchoolAddress').value;
+        let phone = document.getElementById('settingSchoolPhone').value;
+        let email = document.getElementById('settingSchoolEmail').value;
+        
+        if (name) schoolData.name = name;
+        if (address) schoolData.address = address;
+        if (phone) schoolData.phone = phone;
+        if (email) schoolData.email = email;
+        
+        document.getElementById('schoolName').innerText = schoolData.name;
+        alert('تنظیمات خوندي شول');
+        loadDashboard();
+    }
+
+    function changeSchoolPackage() {
+        let newPackage = document.getElementById('changePackage').value;
+        let price = newPackage === 'basic' ? 500 : (newPackage === 'standard' ? 1500 : 3500);
+        let packageName = newPackage === 'basic' ? 'اساسی' : (newPackage === 'standard' ? 'معیاري' : 'پریمیم');
+        if (confirm(`تاسو غواړئ بسته د "${packageName}" ته بدله کړئ (${price} Afs میاشتنی). ادامه ورکړئ؟`)) {
+            schoolData.package = newPackage;
+            schoolData.packagePrice = price;
+            document.getElementById('schoolPackage').innerText = `بسته: ${packageName} - ${price} Afs/میاشت`;
+            alert('بسته بدله شوه');
+            loadDashboard();
+        }
+    }
+
+    function resetTeacherPassword(teacherId) {
+        let newPass = prompt('نوی پاسورډ داخل کړئ:', '123');
+        if (newPass) {
+            let teacher = teachers.find(t => t.id === teacherId);
+            if (teacher) teacher.password = newPass;
+            alert('پاسورډ بدل شو');
+        }
+    }
+
+    function deleteTeacher(teacherId) {
+        if (confirm('تاسو غواړئ دا استاد حذف کړئ؟')) {
+            teachers = teachers.filter(t => t.id !== teacherId);
+            loadTeachers();
+        }
+    }
+
+    function deleteClass(classId) {
+        if (confirm('تاسو غواړئ دا صنف حذف کړئ؟')) {
+            classes = classes.filter(c => c.id !== classId);
+            loadClasses();
+        }
+    }
+
+    function showPanel(panelId) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(panelId + 'Panel').classList.add('active');
+        event.target.classList.add('active');
+        
+        // Load data when panel opens
+        if (panelId === 'teachers') loadTeachers();
+        if (panelId === 'classes') loadClasses();
+        if (panelId === 'advertising') loadAds();
+        if (panelId === 'settings') {
+            document.getElementById('settingSchoolName').value = schoolData.name;
+            document.getElementById('settingSchoolAddress').value = schoolData.address;
+            document.getElementById('settingSchoolPhone').value = schoolData.phone;
+            document.getElementById('settingSchoolEmail').value = schoolData.email;
+        }
+    }
+
+    function logout() {
+        if (confirm('تاسو غواړئ وتلو؟')) {
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Initialize
+    loadDashboard();
+    loadTeachers();
+    loadClasses();
+
+    window.showPanel = showPanel;
+    window.addTeacher = addTeacher;
+    window.addClass = addClass;
+    window.createNewAd = createNewAd;
+    window.selectAdPackage = selectAdPackage;
+    window.runAudit = runAudit;
+    window.saveSchoolSettings = saveSchoolSettings;
+    window.changeSchoolPackage = changeSchoolPackage;
+    window.resetTeacherPassword = resetTeacherPassword;
+    window.deleteTeacher = deleteTeacher;
+    window.deleteClass = deleteClass;
+    window.logout = logout;
+</script>
+</body>
+</html>
