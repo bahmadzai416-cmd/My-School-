@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ps" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مالی سیسټم - سیستم مالی</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            direction: rtl;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+        .nav-tab.active {
+            color: #2a5298;
+            border-bottom: 3px solid #2a5298;
+            font-weight: bold;
+        }
+        .panel {
+            display: none;
+            padding: 20px;
+        }
+        .panel.active { display: block; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e3c72;
+            border-right: 4px solid #2a5298;
+            padding-right: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button.success { background: #28a745; }
+        button.danger { background: #dc3545; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #1e3c72; color: white; }
+        .flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .w-50 { flex: 1; min-width: 200px; }
+        .total-row { background: #e8f4f8; font-weight: bold; }
+        @media print {
+            .nav-tabs, button, .no-print { display: none; }
+            .panel { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">
+        <div>
+            <strong>مالی سیسټم - لیسه معرفت افغان</strong>
+            <div style="font-size: 12px;">حسابدار: احمدالله</div>
+        </div>
+        <button onclick="logout()" style="background: transparent; border: 1px solid white; padding: 4px 12px;">وتلو</button>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="showPanel('dashboard')">📊 ډشبورډ</div>
+        <div class="nav-tab" onclick="showPanel('fees')">💰 فیسانس</div>
+        <div class="nav-tab" onclick="showPanel('expenses')">📉 لګښتونه</div>
+        <div class="nav-tab" onclick="showPanel('salaries')">👨‍🏫 معاشونه</div>
+        <div class="nav-tab" onclick="showPanel('reports')">📋 راپورونه</div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardPanel" class="panel active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalIncome">0</div>
+                <div class="stat-label">ټول عاید</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                <div class="stat-number" id="totalExpense">0</div>
+                <div class="stat-label">ټول لګښت</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                <div class="stat-number" id="netProfit">0</div>
+                <div class="stat-label">خالص عاید</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+                <div class="stat-number" id="pendingFees">0</div>
+                <div class="stat-label">پاتې فیسانس</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د میاشتې عاید او لګښت</div>
+            <canvas id="monthlyChart" style="width:100%; max-height:300px;"></canvas>
+        </div>
+
+        <div class="card">
+            <div class="card-title">وروستي فعالیتونه</div>
+            <div id="recentActivities"></div>
+        </div>
+    </div>
+
+    <!-- Fees Section -->
+    <div id="feesPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د فیسانس ثبتول</div>
+            <div class="flex-row">
+                <div class="w-50"><select id="feeClass" onchange="loadStudentsForFee()"><option value="7">هفتم با</option><option value="8">هشتم با</option><option value="9">نهم با</option></select></div>
+                <div class="w-50"><input type="month" id="feeMonth" value="2026-05"></div>
+            </div>
+            <div id="feeStudentsList"></div>
+            <button onclick="bulkFeePayment()" class="success" style="margin-top: 10px;">💰 ټولو ته تادیه ثبتول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د فیسانس تاریخچه</div>
+            <div id="feeHistory"></div>
+        </div>
+    </div>
+
+    <!-- Expenses Section -->
+    <div id="expensesPanel" class="panel">
+        <div class="card">
+            <div class="card-title">نوی لګښت ثبتول</div>
+            <div class="flex-row">
+                <div class="w-50"><select id="expenseCategory"><option value="برق">برق</option><option value="اوبه">اوبه</option><option value="تلیفون">تلیفون</option><option value="استاد معاش">استاد معاش</option><option value="کتاب">کتاب</option><option value="تجهیزات">تجهیزات</option><option value="نور">نور</option></select></div>
+                <div class="w-50"><input type="number" id="expenseAmount" placeholder="مقدار / Afs"></div>
+            </div>
+            <div class="flex-row">
+                <div class="w-50"><input type="date" id="expenseDate" value="2026-05-07"></div>
+                <div class="w-50"><input type="text" id="expenseDescription" placeholder="تفصیل"></div>
+            </div>
+            <button onclick="addExpense()" class="success">➕ لګښت ثبتول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د لګښتونو لیست</div>
+            <div id="expensesList"></div>
+        </div>
+    </div>
+
+    <!-- Salaries Section -->
+    <div id="salariesPanel" class="panel">
+        <div class="card">
+            <div class="card-title">د استادانو معاشونه</div>
+            <div id="teachersSalaryList"></div>
+            <button onclick="payAllSalaries()" class="success" style="margin-top: 10px;">💸 ټولو ته معاش ورکول</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">د معاشونو تاریخچه</div>
+            <div id="salaryHistory"></div>
+        </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div id="reportsPanel" class="panel">
+        <div class="card">
+            <div class="card-title">مالی راپورونه</div>
+            <select id="reportType">
+                <option value="monthly">میاشتنی راپور</option>
+                <option value="quarterly">سه میاشتنی راپور</option>
+                <option value="yearly">کلنی راپور</option>
+                <option value="tax">د مالیې راپور</option>
+            </select>
+            <select id="reportYear">
+                <option value="1403">۱۴۰۳</option>
+                <option value="1404" selected>۱۴۰۴</option>
+                <option value="1405">۱۴۰۵</option>
+            </select>
+            <select id="reportMonth" style="display:none;">
+                <option value="1">حمل</option><option value="2">ثور</option><option value="3">جوزا</option>
+                <option value="4">سرطان</option><option value="5">اسد</option><option value="6">سنبله</option>
+                <option value="7">میزان</option><option value="8">عقرب</option><option value="9">قوس</option>
+                <option value="10">جدی</option><option value="11">دلو</option><option value="12">حوت</option>
+            </select>
+            <button onclick="generateFinancialReport()" class="success">📊 راپور جوړول</button>
+            <button onclick="printReport()" class="secondary">🖨️ چاپول</button>
+            <div id="financialReport"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Financial Data
+    let feesCollection = [
+        { id: 1, studentId: 1, studentName: "احمدالله", class: "7", amount: 500, month: "2026-05", paid: true, date: "2026-05-01" },
+        { id: 2, studentId: 2, studentName: "محمد", class: "7", amount: 500, month: "2026-05", paid: false, date: null }
+    ];
+
+    let expenses = [
+        { id: 1, category: "برق", amount: 2500, date: "2026-05-01", description: "د میاشت برق" },
+        { id: 2, category: "استاد معاش", amount: 15000, date: "2026-05-05", description: "د استادانو معاش" }
+    ];
+
+    let salaries = [
+        { id: 1, teacherId: 1, teacherName: "احمدالله", amount: 5000, month: "2026-05", paid: true, date: "2026-05-05" },
+        { id: 2, teacherId: 2, teacherName: "فاطمه", amount: 5000, month: "2026-05", paid: false, date: null }
+    ];
+
+    let teachers = [
+        { id: 1, name: "احمدالله", salary: 5000, class: "7", subject: "ریاضی", active: true },
+        { id: 2, name: "فاطمه", salary: 5000, class: "7", subject: "دری", active: true },
+        { id: 3, name: "محمد", salary: 5500, class: "8", subject: "انګلیسي", active: true }
+    ];
+
+    let students = [
+        { id: 1, name: "احمدالله", fatherName: "امانالله", class: "7", rollNo: "1", parentPhone: "0780111111" },
+        { id: 2, name: "محمد", fatherName: "علی", class: "7", rollNo: "2", parentPhone: "0780222222" }
+    ];
+
+    function loadDashboard() {
+        let totalIncome = feesCollection.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0);
+        let totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+        let pendingFees = feesCollection.filter(f => !f.paid).reduce((sum, f) => sum + f.amount, 0);
+        
+        document.getElementById('totalIncome').innerText = totalIncome;
+        document.getElementById('totalExpense').innerText = totalExpense;
+        document.getElementById('netProfit').innerText = totalIncome - totalExpense;
+        document.getElementById('pendingFees').innerText = pendingFees;
+        
+        let recentHtml = '<div class="table-responsive"><table><thead><tr><th>نیټه</th><th>ډول</th><th>مقدار</th><th>تفصیل</th></tr></thead><tbody>';
+        feesCollection.filter(f => f.paid).slice(0, 5).forEach(f => {
+            recentHtml += `<tr><td>${f.date}</td><td>فیسانس</td><td>+${f.amount}</td><td>${f.studentName}</td></tr>`;
+        });
+        expenses.slice(0, 5).forEach(e => {
+            recentHtml += `<tr><td>${e.date}</td><td>لګښت</td><td>-${e.amount}</td><td>${e.category}</td></tr>`;
+        });
+        recentHtml += '</tbody></table></div>';
+        document.getElementById('recentActivities').innerHTML = recentHtml;
+    }
+
+    function loadStudentsForFee() {
+        let classId = document.getElementById('feeClass').value;
+        let filteredStudents = students.filter(s => s.class == classId);
+        let html = '<div class="table-responsive"><table><thead><tr><th>نوم</th><th>د پلار نوم</th><th>میاشتنی فی</th><th>تادیه</th><th>عملیات</th></thead><tbody>';
+        filteredStudents.forEach(s => {
+            let existingFee = feesCollection.find(f => f.studentId === s.id && f.month === document.getElementById('feeMonth').value);
+            let paidStatus = existingFee ? (existingFee.paid ? 'تادیه شوی' : 'نشوی') : 'نشوی';
+            html += `<tr>
+                <td>${s.name}</td>
+                <td>${s.fatherName}</td>
+                <td>500 Afs</td>
+                <td><span class="${paidStatus === 'تادیه شوی' ? 'text-success' : 'text-danger'}">${paidStatus}</span></td>
+                <td><button onclick="recordFee(${s.id}, ${!existingFee || !existingFee.paid})" class="${existingFee?.paid ? 'secondary' : 'success'}" style="padding:5px 10px;">${existingFee?.paid ? 'تادیه شوی' : 'تادیه ثبتول'}</button></td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('feeStudentsList').innerHTML = html;
+    }
+
+    function recordFee(studentId, isPayment) {
+        if (!isPayment) { alert('دا تادیه مخکې ثبت شوې'); return; }
+        let month = document.getElementById('feeMonth').value;
+        let newId = feesCollection.length + 1;
+        let student = students.find(s => s.id === studentId);
+        feesCollection.push({
+            id: newId, studentId, studentName: student.name, class: student.class,
+            amount: 500, month: month, paid: true, date: new Date().toISOString().split('T')[0]
+        });
+        loadStudentsForFee();
+        loadDashboard();
+        alert('تادیه ثبت شوه');
+    }
+
+    function bulkFeePayment() {
+        let classId = document.getElementById('feeClass').value;
+        let month = document.getElementById('feeMonth').value;
+        let classStudents = students.filter(s => s.class == classId);
+        let count = 0;
+        classStudents.forEach(s => {
+            let existing = feesCollection.find(f => f.studentId === s.id && f.month === month);
+            if (!existing || !existing.paid) {
+                feesCollection.push({
+                    id: feesCollection.length + 1, studentId: s.id, studentName: s.name,
+                    class: s.class, amount: 500, month: month, paid: true,
+                    date: new Date().toISOString().split('T')[0]
+                });
+                count++;
+            }
+        });
+        alert(`${count} شاگردانو ته تادیه ثبت شوه`);
+        loadStudentsForFee();
+        loadDashboard();
+    }
+
+    function loadFeeHistory() {
+        let html = '<div class="table-responsive"></tr><thead><tr><th>نیټه</th><th>شاگرد</th><th>صنف</th><th>میاشت</th><th>مقدار</th></thead><tbody>';
+        feesCollection.filter(f => f.paid).forEach(f => {
+            html += `<tr><td>${f.date}</td><td>${f.studentName}</td><td>${f.class}</td><td>${f.month}</td><td>${f.amount}</td></tr>`;
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('feeHistory').innerHTML = html;
+    }
+
+    function addExpense() {
+        let category = document.getElementById('expenseCategory').value;
+        let amount = parseFloat(document.getElementById('expenseAmount').value);
+        let date = document.getElementById('expenseDate').value;
+        let description = document.getElementById('expenseDescription').value;
+        
+        if (!amount) { alert('لطفا مقدار داخل کړئ'); return; }
+        
+        expenses.push({
+            id: expenses.length + 1, category, amount, date, description
+        });
+        loadExpenses();
+        loadDashboard();
+        document.getElementById('expenseAmount').value = '';
+        document.getElementById('expenseDescription').value = '';
+        alert('لګښت ثبت شو');
+    }
+
+    function loadExpenses() {
+        let html = '<div class="table-responsive">\n<table>讷<thead><tr><th>نیټه</th><th>ډول</th><th>تفصیل</th><th>مقدار</th><th>عملیات</th></thead><tbody>';
+        expenses.forEach(e => {
+            html += `<tr>
+                <td>${e.date}</td>
+                <td>${e.category}</td>
+                <td>${e.description || '-'}</td>
+                <td class="text-danger">-${e.amount}</td>
+                <td><button onclick="deleteExpense(${e.id})" style="background:#dc3545; padding:5px 10px;">حذف</button></td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        document.getElementById('expensesList').innerHTML = html;
+    }
+
+    function deleteExpense(id) {
+        if (confirm('تاسو غواړئ دا لګښت حذف کړئ؟')) {
+            expenses = expenses.filter(e => e.id !== id);
+            loadExpenses();
+            loadDashboard();
+        }
+    }
+
+    function loadTeachersSalaryList() {
+        let html = '<div class="table-responsive"><table><thead><tr><th>نوم</th><th>صنف</th><th>مضمون</th><th>معاش</th><th>میاشت</th><th>حالت</th><th>عملیات</th></thead><tbody>';
+        let month = document.getElementById('feeMonth')?.value || '2026-05';
+        teachers.forEach(t => {
+            let existing = salaries.find(s => s.teacherId === t.id && s.month === month);
+            let paidStatus = existing?.paid ? 'تادیه شوی' : 'نشوی';
+            html += `<tr>
+                <td>${t.name}</td>
+                <td>${t.class}</td>
+                <td>${t.subject}</td>
+                <td>${t.salary}</td>
+                <td>${month}</td>
+                <td><span class="${paidStatus === 'تادیه شوی' ? 'text-success' : 'text-danger'}">${paidStatus}</span></td>
+                <td><button onclick="paySalary(${t.id}, ${!existing?.paid})" class="${existing?.paid ? 'secondary' : 'success'}" style="padding:5px 10px;">${existing?.paid ? 'تادیه شوی' : 'تادیه'}</button></td>
+            </tr>`;
+        });
+        html += '</tbody><tr></div>';
+        document.getElementById('teachersSalaryList').innerHTML = html;
+    }
+
+    function paySalary(teacherId, isPayment) {
+        if (!isPayment) { alert('دا معاش مخکې تادیه شوی'); return; }
+        let teacher = teachers.find(t => t.id === teacherId);
+        let month = document.getElementById('feeMonth')?.value || '2026-05';
+        salaries.push({
+            id: salaries.length + 1, teacherId, teacherName: teacher.name,
+            amount: teacher.salary, month: month, paid: true,
+            date: new Date().toISOString().split('T')[0]
+        });
+        loadTeachersSalaryList();
+        loadDashboard();
+        alert(`${teacher.name} ته معاش تادیه شو`);
+    }
+
+    function payAllSalaries() {
+        let month = document.getElementById('feeMonth')?.value || '2026-05';
+        let count = 0;
+        teachers.forEach(t => {
+            let existing = salaries.find(s => s.teacherId === t.id && s.month === month);
+            if (!existing || !existing.paid) {
+                salaries.push({
+                    id: salaries.length + 1, teacherId: t.id, teacherName: t.name,
+                    amount: t.salary, month: month, paid: true,
+                    date: new Date().toISOString().split('T')[0]
+                });
+                count++;
+            }
+        });
+        alert(`${count} استادانو ته معاش تادیه شو`);
+        loadTeachersSalaryList();
+        loadDashboard();
+    }
+
+    function loadSalaryHistory() {
+        let html = '<div class="table-responsive">能able<thead><tr><th>نیټه</th><th>استاد</th><th>میاشت</th><th>مقدار</th></thead><tbody>';
+        salaries.filter(s => s.paid).forEach(s => {
+            html += `<tr><td>${s.date}</td><td>${s.teacherName}</td><td>${s.month}</td><td>${s.amount}</td></tr>`;
+        });
+        html += '</tbody>能得到</div>';
+        document.getElementById('salaryHistory').innerHTML = html;
+    }
+
+    function generateFinancialReport() {
+        let type = document.getElementById('reportType').value;
+        let year = document.getElementById('reportYear').value;
+        let month = document.getElementById('reportMonth').value;
+        
+        let totalIncome = feesCollection.filter(f => f.paid).reduce((sum, f) => sum + f.amount, 0);
+        let totalExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
+        let totalSalaries = salaries.filter(s => s.paid).reduce((sum, s) => sum + s.amount, 0);
+        
+        let html = `<div class="card">
+            <h3>مالی راپور - ${year}</h3>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-number">${totalIncome}</div><div>ټول عاید</div></div>
+                <div class="stat-card" style="background:#dc3545;"><div class="stat-number">${totalExpense}</div><div>ټول لګښت</div></div>
+                <div class="stat-card" style="background:#ffc107;"><div class="stat-number">${totalIncome - totalExpense}</div><div>خالص عاید</div></div>
+            </div>
+            <h4>تفصیل:</h4>
+            <ul>
+                <li>د فیسانس عاید: ${totalIncome} Afs</li>
+                <li>د لګښتونو مجموعه: ${totalExpense} Afs</li>
+                <li>د استادانو معاشونه: ${totalSalaries} Afs</li>
+                <li>د مالیې میزان (۱۰٪): ${(totalIncome * 0.1).toFixed(2)} Afs</li>
+            </ul>
+            <p>د راپور نیټه: ${new Date().toLocaleDateString()}</p>
+        </div>`;
+        document.getElementById('financialReport').innerHTML = html;
+    }
+
+    function showPanel(panelId) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(panelId + 'Panel').classList.add('active');
+        event.target.classList.add('active');
+        
+        if (panelId === 'fees') { loadStudentsForFee(); loadFeeHistory(); }
+        if (panelId === 'expenses') loadExpenses();
+        if (panelId === 'salaries') { loadTeachersSalaryList(); loadSalaryHistory(); }
+        if (panelId === 'reports') {
+            document.getElementById('reportMonth').style.display = 
+                document.getElementById('reportType').value === 'monthly' ? 'inline-block' : 'none';
+        }
+    }
+
+    function printReport() { window.print(); }
+    function logout() { if (confirm('وتل؟')) window.location.href = 'login.html'; }
+
+    // Show/hide month selector based on report type
+    document.getElementById('reportType')?.addEventListener('change', function() {
+        let monthSelect = document.getElementById('reportMonth');
+        if (monthSelect) monthSelect.style.display = this.value === 'monthly' ? 'inline-block' : 'none';
+    });
+
+    // Initialize
+    loadDashboard();
+    loadExpenses();
+    loadFeeHistory();
+    loadSalaryHistory();
+    
+    window.showPanel = showPanel;
+    window.recordFee = recordFee;
+    window.bulkFeePayment = bulkFeePayment;
+    window.addExpense = addExpense;
+    window.deleteExpense = deleteExpense;
+    window.paySalary = paySalary;
+    window.payAllSalaries = payAllSalaries;
+    window.generateFinancialReport = generateFinancialReport;
+    window.printReport = printReport;
+    window.logout = logout;
+    window.loadStudentsForFee = loadStudentsForFee;
+</script>
+</body>
+</html>
