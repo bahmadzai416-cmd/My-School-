@@ -1,39 +1,3 @@
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
-import base64
-import cv2
-import numpy as np
-import pandas as pd
-from io import BytesIO
-import re
-
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/api/ocr', methods=['POST'])
-def ocr_image():
-    """Receive image, extract handwritten numbers using simple contour detection"""
-    data = request.json
-    image_data = data.get('image', '').split(',')[1]
-    image_bytes = base64.b64decode(image_data)
-    np_arr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
-    
-    # Simple digit detection (in real app, use Tesseract or TensorFlow)
-    # This simulates OCR by finding contours
-    _, thresh = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    numbers = []
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        if w > 10 and h > 10:  # filter small noise
-            roi = thresh[y:y+h, x:x+w]
-            # Here you would run digit classification
-            numbers.append({'x': x, 'y': y, 'value': 0})  # placeholder
-    
-    return jsonify({'success': True, 'numbers': numbers, 'message': 'OCR complete'})
-
 @app.route('/api/send-sms', methods=['POST'])
 def send_sms():
     """Send SMS (simulated - integrate with Twilio or local gateway)"""
@@ -49,10 +13,7 @@ def send_sms():
 @app.route('/api/send-whatsapp', methods=['POST'])
 def send_whatsapp():
     """Send WhatsApp message (simulated)"""
-    data = request.json
-    numbers = data.get('numbers', [])
-    message = data.get('message', '')
-    
+    data
     # In production: use WhatsApp Business API
     print(f"WhatsApp to {numbers}: {message}")
     
