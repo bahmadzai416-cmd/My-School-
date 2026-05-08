@@ -1,176 +1,52 @@
 {
-  "name": "AI School Management System",
-  "short_name": "School AI",
-  "description": "سیستم مدیریت مکتب با هوش مصنوعی - د مکتب مدیریت سیسټم د هوش مصنوعي سره",
+  "name": "سیستم مدیریت مکتب",
+  "short_name": "مکتب",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#059669",
-  "background_color": "#f0fdf4",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
   "lang": "fa",
   "dir": "rtl",
-  "categories": ["education", "productivity"],
-  "prefer_related_applications": false,
-  "iarc_rating_id": "",
-  
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23059669'/%3E%3Ccircle cx='256' cy='256' r='200' fill='white'/%3E%3Ctext x='256' y='340' font-size='180' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23059669'/%3E%3Ccircle cx='256' cy='256' r='200' fill='white'/%3E%3Ctext x='256' y='340' font-size='180' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' fill='%23059669'/%3E%3Ccircle cx='128' cy='128' r='100' fill='white'/%3E%3Ctext x='128' y='170' font-size='90' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "256x256",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23059669'/%3E%3Ccircle cx='96' cy='96' r='75' fill='white'/%3E%3Ctext x='96' y='128' font-size='65' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 144'%3E%3Crect width='144' height='144' fill='%23059669'/%3E%3Ccircle cx='72' cy='72' r='56' fill='white'/%3E%3Ctext x='72' y='98' font-size='50' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "144x144",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%23059669'/%3E%3Ccircle cx='64' cy='64' r='50' fill='white'/%3E%3Ctext x='64' y='88' font-size='45' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "128x128",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23059669'/%3E%3Ccircle cx='48' cy='48' r='38' fill='white'/%3E%3Ctext x='48' y='66' font-size='34' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "96x96",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 72'%3E%3Crect width='72' height='72' fill='%23059669'/%3E%3Ccircle cx='36' cy='36' r='28' fill='white'/%3E%3Ctext x='36' y='50' font-size='25' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
+      "src": "icons/icon-72.png",
       "sizes": "72x72",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23059669'/%3E%3Ccircle cx='24' cy='24' r='18' fill='white'/%3E%3Ctext x='24' y='34' font-size='16' text-anchor='middle' fill='%23059669' font-family='Arial'%3E🎓%3C/text%3E%3C/svg%3E",
-      "sizes": "48x48",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  
-  "shortcuts": [
-    {
-      "name": "Dashboard",
-      "short_name": "Home",
-      "description": "Go to dashboard",
-      "url": "/",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23059669'/%3E%3Ctext x='24' y='34' font-size='24' text-anchor='middle' fill='white'%3E📊%3C/text%3E%3C/svg%3E",
-          "sizes": "48x48"
-        }
-      ]
-    },
-    {
-      "name": "Students",
-      "short_name": "Students",
-      "description": "Manage students",
-      "url": "/?page=students",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23059669'/%3E%3Ctext x='24' y='34' font-size='24' text-anchor='middle' fill='white'%3E👨‍🎓%3C/text%3E%3C/svg%3E",
-          "sizes": "48x48"
-        }
-      ]
-    },
-    {
-      "name": "Scan Marksheet",
-      "short_name": "Scan",
-      "description": "AI OCR scan",
-      "url": "/?page=scan",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23059669'/%3E%3Ctext x='24' y='34' font-size='24' text-anchor='middle' fill='white'%3E🤖%3C/text%3E%3C/svg%3E",
-          "sizes": "48x48"
-        }
-      ]
-    },
-    {
-      "name": "Results",
-      "short_name": "Results",
-      "description": "View results",
-      "url": "/?page=results",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23059669'/%3E%3Ctext x='24' y='34' font-size='24' text-anchor='middle' fill='white'%3E📊%3C/text%3E%3C/svg%3E",
-          "sizes": "48x48"
-        }
-      ]
-    }
-  ],
-  
-  "screenshots": [
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 640'%3E%3Crect width='320' height='640' fill='%23f0fdf4' rx='20'/%3E%3Crect width='320' height='80' fill='%23059669' rx='20'/%3E%3Ctext x='160' y='40' font-size='16' text-anchor='middle' fill='white'%3EAI School Management%3C/text%3E%3Ccircle cx='280' cy='40' r='15' fill='white'/%3E%3Crect x='20' y='100' width='280' height='100' fill='white' rx='10'/%3E%3Ctext x='40' y='130' font-size='14' fill='%23333'%3ETotal Students: 150%3C/text%3E%3Ctext x='40' y='155' font-size='14' fill='%23333'%3ETotal Classes: 12%3C/text%3E%3Ctext x='40' y='180' font-size='14' fill='%23333'%3ETotal Subjects: 8%3C/text%3E%3C/svg%3E",
-      "sizes": "320x640",
-      "type": "image/svg+xml",
-      "platform": "android",
-      "label": "Dashboard View"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 640'%3E%3Crect width='320' height='640' fill='%23f0fdf4' rx='20'/%3E%3Crect width='320' height='80' fill='%23059669' rx='20'/%3E%3Ctext x='160' y='40' font-size='16' text-anchor='middle' fill='white'%3EScan Marksheet%3C/text%3E%3Crect x='40' y='120' width='240' height='200' fill='white' rx='10'/%3E%3Crect x='60' y='140' width='200' height='160' fill='%23e5e7eb' rx='5'/%3E%3Ctext x='160' y='230' font-size='14' text-anchor='middle' fill='%23666'%3ECamera Preview%3C/text%3E%3C/svg%3E",
-      "sizes": "320x640",
-      "type": "image/svg+xml",
-      "platform": "android",
-      "label": "AI Scan Feature"
-    }
-  ],
-  
-  "related_applications": [],
-  
-  "features": [
-    "Cross-platform",
-    "Offline support",
-    "Push notifications",
-    "AI OCR scanning",
-    "Multi-language (Dari/Pashto)",
-    "RTL support",
-    "Excel export",
-    "PDF export"
-  ],
-  
-  "launch_handler": {
-    "client_mode": ["focus-existing", "auto"]
-  },
-  
-  "handle_links": "preferred",
-  
-  "edge_side_panel": {
-    "preferred_width": 320
-  },
-  
-  "share_target": {
-    "action": "/share",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }
