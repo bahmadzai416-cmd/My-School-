@@ -1,20 +1,17 @@
 {
-  "name": "سیستم مدیریت مکتب",
-  "short_name": "مکتب سیستم",
-  "description": "سیستم مدیریت مکتب با پشتیبانی دری و پښتو",
+  "name": "AI School Management System",
+  "short_name": "School AI",
+  "description": "Advanced AI-powered school management with OCR, Dari & Pashto support",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#059669",
   "background_color": "#ffffff",
   "orientation": "portrait",
-  "lang": "fa",
-  "dir": "rtl",
   "icons": [
     {
-      "src": "https://emojicdn.elk.sh/🎓",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23059669'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white'%3E🤖%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     }
   ]
 }
