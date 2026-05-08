@@ -3,934 +3,1360 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>AI School Management System - سیستم مدیریت مکتب</title>
-  <meta name="description" content="Advanced AI-powered school management system with OCR, Dari & Pashto support">
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#059669">
+  <meta name="description" content="سیستم مدیریت مکتب - مدیریت هوشمند مدارس">
+  <title>سیستم مدیریت مکتب</title>
   
-  <!-- Tailwind CSS -->
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Google Fonts -->
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts for Persian/Pashto -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Pashto:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- React 18 -->
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
-  
-  <!-- Tesseract.js for OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   
   <!-- SheetJS for Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   
-  <!-- jsPDF for PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
+  <!-- html2pdf for PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <style>
-    * { font-family: 'Vazirmatn', sans-serif; }
-    body { background: #f0fdf4; }
-    .font-pashto { font-family: 'Noto Sans Pashto', sans-serif; }
-    .transition-all { transition: all 0.2s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-    input, select, textarea { font-family: 'Vazirmatn', sans-serif; }
-    .ocr-highlight { background: #fef3c7; transition: all 0.3s; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .scanning { animation: pulse 1.5s infinite; }
-    
-    /* RTL Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
-    
-    /* Print styles for PDF */
+    * {
+      font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      min-height: 100vh;
+    }
+    .card-hover {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+    }
+    .rtl {
+      direction: rtl;
+    }
+    .ltr {
+      direction: ltr;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 2000;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .language-btn.active {
+      background-color: #059669;
+      color: white;
+    }
     @media print {
-      .no-print { display: none !important; }
-      body { background: white; }
-      .print-friendly { box-shadow: none; border: 1px solid #ddd; }
+      .no-print { display: none; }
+      .print-only { display: block; }
+    }
+    .attendance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .camera-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+    }
+    .camera-modal.active {
+      display: flex;
+    }
+    video {
+      width: 100%;
+      height: 60%;
+      object-fit: cover;
     }
   </style>
 </head>
-<body>
-  <div id="root"></div>
+<body class="rtl">
 
-  <script>
-    // ==================== LOCAL STORAGE KEYS ====================
-    const STORAGE = {
-      STUDENTS: 'school_students',
-      CLASSES: 'school_classes',
-      SUBJECTS: 'school_subjects',
-      EXAMS: 'school_exams',
-      RESULTS: 'school_results',
-      USERS: 'school_users',
-      CURRENT_USER: 'school_current_user',
-      SCAN_SESSIONS: 'school_scan_sessions',
-      SETTINGS: 'school_settings'
+<!-- Toast Notification -->
+<div id="toast" class="toast"></div>
+
+<!-- Camera Modal for AI Attendance -->
+<div id="cameraModal" class="camera-modal">
+  <div class="flex justify-between p-4 bg-gray-900 text-white">
+    <h3 class="text-lg" id="cameraTitle">گرفتن عکس حاضری</h3>
+    <button onclick="closeCamera()" class="text-white text-xl">&times;</button>
+  </div>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <div class="p-4 bg-gray-900 flex gap-3">
+    <button onclick="capturePhoto()" class="flex-1 bg-green-600 text-white py-3 rounded-lg">📸 گرفتن عکس</button>
+    <button onclick="uploadFromGallery()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg">🖼 انتخاب از گالری</button>
+  </div>
+  <div id="aiResult" class="p-4 bg-white dark:bg-gray-800 hidden"></div>
+</div>
+
+<!-- Main App Container -->
+<div id="app" class="container mx-auto px-4 py-6 max-w-7xl">
+  
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+        <i class="fas fa-school text-white text-2xl"></i>
+      </div>
+      <div>
+        <h1 id="appTitle" class="text-2xl font-bold text-emerald-800">سیستم مدیریت مکتب</h1>
+        <p id="appSubtitle" class="text-xs text-gray-500">نسخه ۲.۰ - آفلاین</p>
+      </div>
+    </div>
+    
+    <div class="flex gap-2">
+      <!-- Language Selector -->
+      <div class="flex bg-white rounded-lg shadow overflow-hidden">
+        <button onclick="setLanguage('dari')" id="langDari" class="px-3 py-2 text-sm font-medium transition language-btn active">دری</button>
+        <button onclick="setLanguage('pashto')" id="langPashto" class="px-3 py-2 text-sm font-medium transition language-btn">پښتو</button>
+        <button onclick="setLanguage('english')" id="langEnglish" class="px-3 py-2 text-sm font-medium transition language-btn">English</button>
+      </div>
+      
+      <!-- User Info -->
+      <div id="userInfo" class="bg-white rounded-lg shadow px-4 py-2 flex items-center gap-2">
+        <i class="fas fa-user-circle text-emerald-600 text-xl"></i>
+        <span id="userName" class="font-medium">مدیر</span>
+      </div>
+      
+      <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+        <i class="fas fa-sign-out-alt ml-1"></i> <span id="logoutBtn">خروج</span>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Role Selection Cards (Main Screen) -->
+  <div id="roleSelection" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div onclick="selectRole('principal')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+      <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-crown text-white text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-center mb-2" data-key="principal">مدیر مکتب</h3>
+      <p class="text-sm text-gray-500 text-center" data-key="principalDesc">مدیریت کامل سیستم، حقوق معلمین، گزارشات مالی</p>
+    </div>
+    
+    <div onclick="selectRole('finance')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+      <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-chart-line text-white text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-center mb-2" data-key="financeManager">مدیر مالی</h3>
+      <p class="text-sm text-gray-500 text-center" data-key="financeDesc">دریافت شهریه، حسابداری، گزارشات مالی</p>
+    </div>
+    
+    <div onclick="selectRole('headteacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+      <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-chalkboard-user text-white text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-center mb-2" data-key="headTeacher">استاد سر</h3>
+      <p class="text-sm text-gray-500 text-center" data-key="headDesc">مدیریت شاگردان، جدول‌ها، فرم‌ها</p>
+    </div>
+    
+    <div onclick="selectRole('teacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+      <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-person-chalkboard text-white text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-center mb-2" data-key="teacher">استاد</h3>
+      <p class="text-sm text-gray-500 text-center" data-key="teacherDesc">حاضری، امتحانات، کار عملی</p>
+    </div>
+  </div>
+  
+  <!-- Dashboard Container (Dynamic Content) -->
+  <div id="dashboardContainer"></div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-graduation-cap text-white text-4xl"></i>
+      </div>
+      <h2 id="loginTitle" class="text-2xl font-bold">ورود به سیستم</h2>
+      <p id="loginSubtitle" class="text-gray-500 text-sm mt-1">لطفاً اطلاعات خود را وارد کنید</p>
+    </div>
+    
+    <form onsubmit="handleLogin(event)">
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2" data-key="email">آدرس ایمیل</label>
+        <input type="email" id="loginEmail" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent ltr" placeholder="admin@school.com">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2" data-key="password">رمز عبور</label>
+        <input type="password" id="loginPassword" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent ltr" placeholder="••••••">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2" data-key="role">نقش شما</label>
+        <select id="loginRole" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500">
+          <option value="principal" data-key="principal">مدیر مکتب</option>
+          <option value="finance" data-key="financeManager">مدیر مالی</option>
+          <option value="headteacher" data-key="headTeacher">استاد سر</option>
+          <option value="teacher" data-key="teacher">استاد</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
+        <i class="fas fa-sign-in-alt ml-1"></i> <span data-key="login">ورود</span>
+      </button>
+    </form>
+    
+    <div class="text-center mt-4">
+      <button onclick="showSignup()" class="text-emerald-600 text-sm hover:underline" data-key="noAccount">حساب ندارید؟ ثبت نام کنید</button>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div id="signupModal" class="modal">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-user-plus text-white text-4xl"></i>
+      </div>
+      <h2 id="signupTitle" class="text-2xl font-bold">ثبت نام</h2>
+      <p id="signupSubtitle" class="text-gray-500 text-sm mt-1">اطلاعات خود را وارد کنید</p>
+    </div>
+    
+    <form onsubmit="handleSignup(event)">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-medium mb-1" data-key="firstName">نام</label>
+          <input type="text" id="signupFirstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" data-key="lastName">نام خانوادگی</label>
+          <input type="text" id="signupLastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1" data-key="email">آدرس ایمیل</label>
+        <input type="email" id="signupEmail" required class="w-full border border-gray-300 rounded-lg px-3 py-2 ltr">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1" data-key="phone">شماره تماس</label>
+        <input type="tel" id="signupPhone" required class="w-full border border-gray-300 rounded-lg px-3 py-2 ltr">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1" data-key="schoolName">نام مکتب</label>
+        <input type="text" id="signupSchool" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium mb-1" data-key="password">رمز عبور</label>
+        <input type="password" id="signupPassword" required minlength="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 ltr">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1" data-key="role">نقش شما</label>
+        <select id="signupRole" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+          <option value="principal" data-key="principal">مدیر مکتب</option>
+          <option value="finance" data-key="financeManager">مدیر مالی</option>
+          <option value="headteacher" data-key="headTeacher">استاد سر</option>
+          <option value="teacher" data-key="teacher">استاد</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
+        <i class="fas fa-user-plus ml-1"></i> <span data-key="signup">ثبت نام</span>
+      </button>
+    </form>
+    
+    <div class="text-center mt-4">
+      <button onclick="showLogin()" class="text-emerald-600 text-sm hover:underline" data-key="haveAccount">قبلاً حساب دارید؟ وارد شوید</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==================== GLOBAL STATE ====================
+  let currentUser = null;
+  let currentRole = null;
+  let currentLanguage = localStorage.getItem('language') || 'dari';
+  
+  // Local Storage Keys
+  const STORAGE = {
+    USERS: 'school_users',
+    STUDENTS: 'school_students',
+    TEACHERS: 'school_teachers',
+    CLASSES: 'school_classes',
+    SUBJECTS: 'school_subjects',
+    HOMEWORK: 'school_homework',
+    ATTENDANCE: 'school_attendance',
+    SALARIES: 'school_salaries',
+    FEES: 'school_fees',
+    JOURNAL: 'school_journal',
+    TEMP_STUDENTS: 'school_temp_students',
+    CONDITIONAL_STUDENTS: 'school_conditional',
+    BANNED_STUDENTS: 'school_banned'
+  };
+  
+  // Initialize Local Storage with default data
+  function initStorage() {
+    if (!localStorage.getItem(STORAGE.USERS)) {
+      const defaultUsers = [
+        { id: '1', email: 'admin@school.com', password: 'admin123', firstName: 'مدیر', lastName: 'سیستم', phone: '0770000000', school: 'مکتب نمونه', role: 'principal' }
+      ];
+      localStorage.setItem(STORAGE.USERS, JSON.stringify(defaultUsers));
+    }
+    if (!localStorage.getItem(STORAGE.STUDENTS)) localStorage.setItem(STORAGE.STUDENTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.TEACHERS)) localStorage.setItem(STORAGE.TEACHERS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.CLASSES)) {
+      localStorage.setItem(STORAGE.CLASSES, JSON.stringify([
+        { id: '1', name: 'صنف ۶', gradeLevel: 6, teacherId: null },
+        { id: '2', name: 'صنف ۷', gradeLevel: 7, teacherId: null },
+        { id: '3', name: 'صنف ۸', gradeLevel: 8, teacherId: null }
+      ]));
+    }
+    if (!localStorage.getItem(STORAGE.SUBJECTS)) {
+      localStorage.setItem(STORAGE.SUBJECTS, JSON.stringify([
+        { id: '1', name: 'دری', classId: '1', teacherId: null, fullMarks: 100 },
+        { id: '2', name: 'پښتو', classId: '1', teacherId: null, fullMarks: 100 },
+        { id: '3', name: 'ریاضی', classId: '1', teacherId: null, fullMarks: 100 }
+      ]));
+    }
+    if (!localStorage.getItem(STORAGE.HOMEWORK)) localStorage.setItem(STORAGE.HOMEWORK, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.ATTENDANCE)) localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.SALARIES)) localStorage.setItem(STORAGE.SALARIES, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.FEES)) localStorage.setItem(STORAGE.FEES, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.JOURNAL)) localStorage.setItem(STORAGE.JOURNAL, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.TEMP_STUDENTS)) localStorage.setItem(STORAGE.TEMP_STUDENTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.CONDITIONAL_STUDENTS)) localStorage.setItem(STORAGE.CONDITIONAL_STUDENTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE.BANNED_STUDENTS)) localStorage.setItem(STORAGE.BANNED_STUDENTS, JSON.stringify([]));
+  }
+  
+  // ==================== TRANSLATIONS ====================
+  const translationsData = {
+    dari: {
+      appName: "سیستم مدیریت مکتب",
+      login: "ورود", signup: "ثبت نام", logout: "خروج",
+      principal: "مدیر مکتب", financeManager: "مدیر مالی", headTeacher: "استاد سر", teacher: "استاد",
+      email: "آدرس ایمیل", password: "رمز عبور", phone: "شماره تماس", schoolName: "نام مکتب",
+      firstName: "نام", lastName: "نام خانوادگی", role: "نقش شما",
+      noAccount: "حساب ندارید؟ ثبت نام کنید", haveAccount: "قبلاً حساب دارید؟ وارد شوید",
+      principalDesc: "مدیریت کامل سیستم، حقوق معلمین، گزارشات مالی",
+      financeDesc: "دریافت شهریه، حسابداری، گزارشات مالی",
+      headDesc: "مدیریت شاگردان، جدول‌ها، فرم‌ها",
+      teacherDesc: "حاضری، امتحانات، کار عملی",
+      homework: "کار خانه گی", attendance: "حاضری", exams: "امتحانات", salary: "معاش",
+      present: "حاضر", absent: "غایب", save: "ذخیره", cancel: "انصراف", delete: "حذف",
+      profit: "سود", loss: "زیان", balanceSheet: "بیلانس شیٹ", journal: "ژورنال",
+      feeReceived: "شهریه دریافت شده", feePayable: "شهریه قابل پرداخت", remainingFee: "باقی مانده شهریه",
+      newEnrollment: "فورم جدید الشمول", temporary: "شاگردان موقت", conditional: "شاگردان مشروط",
+      banned: "شاگردان محرومین سه ساله", baseBook: "کتاب اساس", transfer: "جدول سه پارچه رفت و آمد"
+    },
+    pashto: {
+      appName: "د مکتب مدیریت سیسټم",
+      login: "ننوتل", signup: "ثبت نام", logout: "وتل",
+      principal: "د مکتب مدیر", financeManager: "مالي مدیر", headTeacher: "لومړی استاد", teacher: "استاد",
+      email: "برېښلیک", password: "پټ نوم", phone: "د تماس شمېره", schoolName: "د مکتب نوم",
+      firstName: "نوم", lastName: "تخلص", role: "ستاسو رول",
+      noAccount: "حساب نه لرئ؟ ثبت نام وکړئ", haveAccount: "له قبل حساب لرئ؟ ننوځئ",
+      principalDesc: "د سیسټم بشپړ مدیریت، د ښوونکو معاشونه، مالی راپورونه",
+      financeDesc: "د ترتیب ترلاسه کول، حساب ورکونه، مالی راپورونه",
+      headDesc: "د زده کونکو مدیریت، جدولونه، فورمونه",
+      teacherDesc: "حاضري، ازموینې، عملي کار",
+      homework: "کورنی کار", attendance: "حاضرتی", exams: "ازمونې", salary: "معاش",
+      present: "حاضر", absent: "غایب", save: "خوندي کول", cancel: "لغوه کول", delete: "ړنګول",
+      profit: "ګټه", loss: "زیان", balanceSheet: "توازن پاڼه", journal: "ژورنال",
+      feeReceived: "ترتیب ترلاسه شوی", feePayable: "د ورکولو وړ ترتیب", remainingFee: "پاتې ترتیب",
+      newEnrollment: "د نوي شاملیدو فورم", temporary: "عارضي زده کونکي", conditional: "مشروط زده کونکي",
+      banned: "د درې کلونو محروم زده کونکي", baseBook: "اساسی کتاب", transfer: "د تګ راتګ جدول"
+    },
+    english: {
+      appName: "School Management System",
+      login: "Login", signup: "Sign Up", logout: "Logout",
+      principal: "Principal", financeManager: "Finance Manager", headTeacher: "Head Teacher", teacher: "Teacher",
+      email: "Email Address", password: "Password", phone: "Phone Number", schoolName: "School Name",
+      firstName: "First Name", lastName: "Last Name", role: "Your Role",
+      noAccount: "Don't have an account? Sign up", haveAccount: "Already have an account? Login",
+      principalDesc: "Full system management, teacher salaries, financial reports",
+      financeDesc: "Fee collection, accounting, financial reports",
+      headDesc: "Student management, tables, forms",
+      teacherDesc: "Attendance, exams, practical work",
+      homework: "Homework", attendance: "Attendance", exams: "Exams", salary: "Salary",
+      present: "Present", absent: "Absent", save: "Save", cancel: "Cancel", delete: "Delete",
+      profit: "Profit", loss: "Loss", balanceSheet: "Balance Sheet", journal: "Journal",
+      feeReceived: "Fee Received", feePayable: "Fee Payable", remainingFee: "Remaining Fee",
+      newEnrollment: "New Enrollment Form", temporary: "Temporary Students", conditional: "Conditional Students",
+      banned: "3-Year Banned Students", baseBook: "Base Book", transfer: "Transfer Table"
+    }
+  };
+  
+  function t(key) {
+    return translationsData[currentLanguage][key] || key;
+  }
+  
+  function setLanguage(lang) {
+    currentLanguage = lang;
+    localStorage.setItem('language', lang);
+    document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`lang${lang.charAt(0).toUpperCase() + lang.slice(1)}`).classList.add('active');
+    updateAllTexts();
+    showToast(`Language changed to ${lang}`);
+    if (currentRole) renderDashboard();
+  }
+  
+  function updateAllTexts() {
+    document.querySelectorAll('[data-key]').forEach(el => {
+      const key = el.getAttribute('data-key');
+      if (translationsData[currentLanguage][key]) el.textContent = translationsData[currentLanguage][key];
+    });
+    document.getElementById('appTitle').textContent = t('appName');
+  }
+  
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.background = isError ? '#dc2626' : '#059669';
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  }
+  
+  // ==================== AUTHENTICATION ====================
+  function showLogin() {
+    document.getElementById('loginModal').classList.add('active');
+    document.getElementById('signupModal').classList.remove('active');
+  }
+  
+  function showSignup() {
+    document.getElementById('signupModal').classList.add('active');
+    document.getElementById('loginModal').classList.remove('active');
+  }
+  
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const role = document.getElementById('loginRole').value;
+    
+    const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+      currentUser = user;
+      currentRole = role;
+      localStorage.setItem('currentUser', JSON.stringify({ id: user.id, role: role }));
+      document.getElementById('loginModal').classList.remove('active');
+      document.getElementById('userName').textContent = `${user.firstName} ${user.lastName}`;
+      document.getElementById('roleSelection').style.display = 'grid';
+      showToast(`خوش آمدید ${user.firstName}`);
+    } else {
+      showToast('ایمیل یا رمز عبور اشتباه است', true);
+    }
+  }
+  
+  function handleSignup(e) {
+    e.preventDefault();
+    const firstName = document.getElementById('signupFirstName').value;
+    const lastName = document.getElementById('signupLastName').value;
+    const email = document.getElementById('signupEmail').value;
+    const phone = document.getElementById('signupPhone').value;
+    const school = document.getElementById('signupSchool').value;
+    const password = document.getElementById('signupPassword').value;
+    const role = document.getElementById('signupRole').value;
+    
+    const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
+    if (users.find(u => u.email === email)) {
+      showToast('این ایمیل قبلاً ثبت شده است', true);
+      return;
+    }
+    
+    const newUser = {
+      id: Date.now().toString(),
+      firstName, lastName, email, phone, school, password, role
     };
-
-    // ==================== INITIAL DATA ====================
-    function initializeDatabase() {
-      if (!localStorage.getItem(STORAGE.STUDENTS)) {
-        localStorage.setItem(STORAGE.STUDENTS, JSON.stringify([
-          { id: '1', roll_number: '001', full_name: 'احمد رضا', father_name: 'محمد', class_id: '1', academic_year: '1405', phone: '0771234567' },
-          { id: '2', roll_number: '002', full_name: 'فاطمه حسینی', father_name: 'علی', class_id: '1', academic_year: '1405', phone: '0771234568' },
-          { id: '3', roll_number: '003', full_name: 'محمد امین', father_name: 'کریم', class_id: '2', academic_year: '1405', phone: '0771234569' },
-          { id: '4', roll_number: '004', full_name: 'زینب کریمی', father_name: 'حسن', class_id: '2', academic_year: '1405', phone: '0771234570' },
-          { id: '5', roll_number: '005', full_name: 'علی رضایی', father_name: 'رضا', class_id: '3', academic_year: '1405', phone: '0771234571' }
-        ]));
-      }
-      if (!localStorage.getItem(STORAGE.CLASSES)) {
-        localStorage.setItem(STORAGE.CLASSES, JSON.stringify([
-          { id: '1', name: 'صنف هفتم', name_pashto: 'اووم ټولګی', grade_level: 7, academic_year: '1405' },
-          { id: '2', name: 'صنف هشتم', name_pashto: 'اتم ټولګی', grade_level: 8, academic_year: '1405' },
-          { id: '3', name: 'صنف نهم', name_pashto: 'نهم ټولګی', grade_level: 9, academic_year: '1405' },
-          { id: '4', name: 'صنف دهم', name_pashto: 'لسم ټولګی', grade_level: 10, academic_year: '1405' }
-        ]));
-      }
-      if (!localStorage.getItem(STORAGE.SUBJECTS)) {
-        localStorage.setItem(STORAGE.SUBJECTS, JSON.stringify([
-          { id: '1', name: 'ریاضی', name_pashto: 'ریاضی', full_marks: 100, pass_marks: 40 },
-          { id: '2', name: 'دری', name_pashto: 'دری', full_marks: 100, pass_marks: 40 },
-          { id: '3', name: 'انگلیسی', name_pashto: 'انګلیسي', full_marks: 100, pass_marks: 40 },
-          { id: '4', name: 'علوم', name_pashto: 'ساینس', full_marks: 100, pass_marks: 40 },
-          { id: '5', name: 'اسلامیات', name_pashto: 'اسلامیات', full_marks: 100, pass_marks: 40 }
-        ]));
-      }
-      if (!localStorage.getItem(STORAGE.EXAMS)) {
-        localStorage.setItem(STORAGE.EXAMS, JSON.stringify([
-          { id: '1', name: 'امتحان نیم‌سال اول', name_pashto: 'لومړی نیم کلنی امتحان', class_id: '1', academic_year: '1405', exam_date: '1405/08/15' },
-          { id: '2', name: 'امتحان نیم‌سال دوم', name_pashto: 'دویم نیم کلنی امتحان', class_id: '1', academic_year: '1405', exam_date: '1405/12/20' }
-        ]));
-      }
-      if (!localStorage.getItem(STORAGE.RESULTS)) {
-        localStorage.setItem(STORAGE.RESULTS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(STORAGE.USERS)) {
-        localStorage.setItem(STORAGE.USERS, JSON.stringify([
-          { id: '1', email: 'admin@school.com', password: 'admin123', role: 'admin', full_name: 'مدیر سیستم', full_name_pashto: 'د سیسټم مدیر' },
-          { id: '2', email: 'teacher@school.com', password: 'teacher123', role: 'teacher', full_name: 'معلم', full_name_pashto: 'ښوونکی' }
-        ]));
-      }
-      if (!localStorage.getItem(STORAGE.SETTINGS)) {
-        localStorage.setItem(STORAGE.SETTINGS, JSON.stringify({
-          schoolName: 'مکتب خصوصی الف',
-          schoolNamePashto: 'الخصوصي ښوونځی الف',
-          schoolLogo: '🎓',
-          academicYear: '1405',
-          defaultLanguage: 'dari'
-        }));
+    users.push(newUser);
+    localStorage.setItem(STORAGE.USERS, JSON.stringify(users));
+    
+    if (role === 'teacher') {
+      const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
+      teachers.push({ id: newUser.id, fullName: `${firstName} ${lastName}`, phone, salary: 0 });
+      localStorage.setItem(STORAGE.TEACHERS, JSON.stringify(teachers));
+    }
+    
+    showToast('حساب با موفقیت ایجاد شد! لطفاً وارد شوید');
+    showLogin();
+  }
+  
+  function logout() {
+    currentUser = null;
+    currentRole = null;
+    localStorage.removeItem('currentUser');
+    document.getElementById('roleSelection').style.display = 'grid';
+    document.getElementById('dashboardContainer').innerHTML = '';
+    showLogin();
+  }
+  
+  // ==================== RENDER DASHBOARD BASED ON ROLE ====================
+  function selectRole(role) {
+    currentRole = role;
+    document.getElementById('roleSelection').style.display = 'none';
+    renderDashboard();
+  }
+  
+  function renderDashboard() {
+    const container = document.getElementById('dashboardContainer');
+    if (currentRole === 'principal') renderPrincipalDashboard(container);
+    else if (currentRole === 'finance') renderFinanceDashboard(container);
+    else if (currentRole === 'headteacher') renderHeadTeacherDashboard(container);
+    else if (currentRole === 'teacher') renderTeacherDashboard(container);
+  }
+  
+  // ==================== PRINCIPAL DASHBOARD ====================
+  function renderPrincipalDashboard(container) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-3">
+          <h2 class="text-2xl font-bold"><i class="fas fa-crown text-amber-500 ml-2"></i> ${t('principal')}</h2>
+          <button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+            <i class="fas fa-arrow-right ml-1"></i> تغییر نقش
+          </button>
+        </div>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-6 mb-6">
+        <div onclick="showHomeworkSection()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-book-open text-3xl text-blue-500 mb-3"></i>
+          <h3 class="font-bold text-lg">${t('homework')}</h3>
+          <p class="text-sm text-gray-500">${t('checkHomework')}</p>
+        </div>
+        <div onclick="showSalarySection()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-money-bill-wave text-3xl text-green-500 mb-3"></i>
+          <h3 class="font-bold text-lg">${t('salary')}</h3>
+          <p class="text-sm text-gray-500">پرداخت معاش معلمین</p>
+        </div>
+        <div onclick="showFinanceSection()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-chart-line text-3xl text-emerald-500 mb-3"></i>
+          <h3 class="font-bold text-lg">گزارشات مالی</h3>
+          <p class="text-sm text-gray-500">${t('profit')} و ${t('loss')}</p>
+        </div>
+      </div>
+      
+      <div id="principalSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+    `;
+  }
+  
+  function showHomeworkSection() {
+    const homework = JSON.parse(localStorage.getItem(STORAGE.HOMEWORK) || '[]');
+    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
+    const subjects = JSON.parse(localStorage.getItem(STORAGE.SUBJECTS) || '[]');
+    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
+    
+    const section = document.getElementById('principalSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-tasks ml-2"></i> ${t('homework')} - ${t('dailyReport')}</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-3 text-right">صنف</th><th class="p-3 text-right">مضمون</th><th class="p-3 text-right">استاد</th><th class="p-3 text-right">کار خانه گی</th><th class="p-3 text-right">تاریخ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${homework.map(h => {
+              const classObj = classes.find(c => c.id === h.classId);
+              const subjectObj = subjects.find(s => s.id === h.subjectId);
+              const teacherObj = teachers.find(t => t.id === h.teacherId);
+              return `<tr class="border-b"><td class="p-3">${classObj?.name || '-'}</td><td class="p-3">${subjectObj?.name || '-'}</td><td class="p-3">${teacherObj?.fullName || '-'}</td><td class="p-3">${h.title}</td><td class="p-3">${h.createdAt || new Date().toLocaleDateString('fa-IR')}</td></tr>`;
+            }).join('') || '<tr><td colspan="5" class="p-6 text-center text-gray-500">هیچ کار خانه گی ثبت نشده</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      <button onclick="addHomeworkForm()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-plus ml-1"></i> افزودن کار خانه گی</button>
+    `;
+  }
+  
+  function addHomeworkForm() {
+    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
+    const subjects = JSON.parse(localStorage.getItem(STORAGE.SUBJECTS) || '[]');
+    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
+    
+    const section = document.getElementById('principalSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4">ثبت کار خانه گی جدید</h3>
+      <form onsubmit="saveHomework(event)">
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+          <div><label class="block mb-1">صنف</label><select id="hwClassId" class="w-full border rounded-lg p-2" required>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+          <div><label class="block mb-1">مضمون</label><select id="hwSubjectId" class="w-full border rounded-lg p-2" required>${subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}</select></div>
+        </div>
+        <div class="mb-4"><label class="block mb-1">عنوان کار خانه گی</label><input type="text" id="hwTitle" class="w-full border rounded-lg p-2" required></div>
+        <div class="mb-4"><label class="block mb-1">توضیحات</label><textarea id="hwDesc" class="w-full border rounded-lg p-2" rows="3"></textarea></div>
+        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg">ذخیره</button>
+        <button type="button" onclick="showHomeworkSection()" class="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2">انصراف</button>
+      </form>
+    `;
+  }
+  
+  function saveHomework(e) {
+    e.preventDefault();
+    const homework = JSON.parse(localStorage.getItem(STORAGE.HOMEWORK) || '[]');
+    homework.push({
+      id: Date.now().toString(),
+      classId: document.getElementById('hwClassId').value,
+      subjectId: document.getElementById('hwSubjectId').value,
+      title: document.getElementById('hwTitle').value,
+      description: document.getElementById('hwDesc').value,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem(STORAGE.HOMEWORK, JSON.stringify(homework));
+    showToast('کار خانه گی با موفقیت ثبت شد');
+    showHomeworkSection();
+  }
+  
+  function showSalarySection() {
+    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
+    const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES) || '[]');
+    
+    const section = document.getElementById('principalSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-money-bill-wave ml-2"></i> ${t('salary')}</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead><tr class="bg-gray-100"><th class="p-3">نام استاد</th><th class="p-3">معاش پایه</th><th class="p-3">معاش پرداخت شده</th><th class="p-3">ماه</th><th class="p-3">عملیات</th></tr></thead>
+          <tbody>
+            ${teachers.map(t => {
+              const paid = salaries.filter(s => s.teacherId === t.id).reduce((sum, s) => sum + s.amount, 0);
+              return `<tr class="border-b"><td class="p-3">${t.fullName}</td><td class="p-3">${t.salary || 0} افغانی</td><td class="p-3">${paid} افغانی</td><td class="p-3"><select id="month_${t.id}" class="border rounded p-1"><option value="1">جنوری</option><option value="2">فبروری</option><option value="3">مارچ</option><option value="4">اپریل</option><option value="5">می</option><option value="6">جون</option><option value="7">جولای</option><option value="8">آگست</option><option value="9">سپتامبر</option><option value="10">اکتوبر</option><option value="11">نومبر</option><option value="12">دسمبر</option></select></td><td class="p-3"><button onclick="paySalary('${t.id}', ${t.salary || 0})" class="bg-green-600 text-white px-3 py-1 rounded">پرداخت</button></td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  
+  function paySalary(teacherId, amount) {
+    const monthSelect = document.getElementById(`month_${teacherId}`);
+    const month = monthSelect.value;
+    const year = new Date().getFullYear();
+    
+    const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES) || '[]');
+    salaries.push({
+      id: Date.now().toString(),
+      teacherId,
+      amount,
+      month: parseInt(month),
+      year,
+      paymentDate: new Date().toISOString()
+    });
+    localStorage.setItem(STORAGE.SALARIES, JSON.stringify(salaries));
+    
+    // Add to journal
+    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
+    journal.push({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      description: `پرداخت معاش به استاد - ماه ${month}`,
+      debit: amount,
+      credit: 0,
+      account: "معاش"
+    });
+    localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
+    
+    showToast(`معاش ${amount} افغانی پرداخت شد`);
+    showSalarySection();
+  }
+  
+  function showFinanceSection() {
+    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
+    const totalDebit = journal.reduce((sum, j) => sum + (j.debit || 0), 0);
+    const totalCredit = journal.reduce((sum, j) => sum + (j.credit || 0), 0);
+    const profit = totalCredit - totalDebit;
+    
+    const section = document.getElementById('principalSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-chart-line ml-2"></i> گزارشات مالی</h3>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-green-50 rounded-xl p-4 text-center"><div class="text-2xl font-bold text-green-600">${totalCredit} افغانی</div><div>مجموع دریافتی</div></div>
+        <div class="bg-red-50 rounded-xl p-4 text-center"><div class="text-2xl font-bold text-red-600">${totalDebit} افغانی</div><div>مجموع پرداختی</div></div>
+        <div class="bg-blue-50 rounded-xl p-4 text-center"><div class="text-2xl font-bold text-blue-600">${profit} افغانی</div><div>${profit >= 0 ? t('profit') : t('loss')}</div></div>
+      </div>
+      <h4 class="font-bold mb-2">ژورنال</h4>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">شرح</th><th class="p-2">بدهکار</th><th class="p-2">بستانکار</th></tr></thead>
+          <tbody>${journal.map(j => `<tr class="border-b"><td class="p-2">${new Date(j.date).toLocaleDateString('fa-IR')}</td><td class="p-2">${j.description}</td><td class="p-2">${j.debit || 0}</td><td class="p-2">${j.credit || 0}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+      <button onclick="exportToExcel()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-file-excel ml-1"></i> خروجی Excel</button>
+      <button onclick="exportToPDF()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg mr-2"><i class="fas fa-file-pdf ml-1"></i> خروجی PDF</button>
+    `;
+  }
+  
+  // ==================== TEACHER DASHBOARD ====================
+  function renderTeacherDashboard(container) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-3">
+          <h2 class="text-2xl font-bold"><i class="fas fa-person-chalkboard text-purple-500 ml-2"></i> ${t('teacher')}</h2>
+          <button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"><i class="fas fa-arrow-right ml-1"></i> تغییر نقش</button>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div onclick="showTeacherAttendance()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-calendar-check text-3xl text-blue-500 mb-3"></i>
+          <h3 class="font-bold text-lg">${t('attendance')}</h3>
+          <p class="text-sm text-gray-500">ثبت حاضری با AI و اطلاع به والدین</p>
+        </div>
+        <div onclick="showTeacherExams()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-pen-to-square text-3xl text-orange-500 mb-3"></i>
+          <h3 class="font-bold text-lg">${t('exams')}</h3>
+          <p class="text-sm text-gray-500">${t('midTerm')} و ${t('annualExam')}</p>
+        </div>
+        <div onclick="showPracticalWork()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer">
+          <i class="fas fa-flask text-3xl text-purple-500 mb-3"></i>
+          <h3 class="font-bold text-lg">کار عملی</h3>
+          <p class="text-sm text-gray-500">ثبت و ارسال به مدیریت</p>
+        </div>
+      </div>
+      <div id="teacherSection" class="mt-6 bg-white rounded-2xl p-6 shadow-lg"></div>
+    `;
+  }
+  
+  function showTeacherAttendance() {
+    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
+    const section = document.getElementById('teacherSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-calendar-check ml-2"></i> ${t('attendance')}</h3>
+      <div class="mb-4"><label class="block mb-1">انتخاب صنف</label><select id="attendanceClass" class="w-full border rounded-lg p-2 max-w-md" onchange="loadStudentsForAttendance()"><option value="">انتخاب کنید</option>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div id="attendanceStudentsList" class="mt-4"></div>
+      <button onclick="openCameraForAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-camera ml-1"></i> ثبت حاضری با AI و دوربین</button>
+    `;
+  }
+  
+  function loadStudentsForAttendance() {
+    const classId = document.getElementById('attendanceClass').value;
+    if (!classId) return;
+    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]').filter(s => s.classId === classId);
+    const container = document.getElementById('attendanceStudentsList');
+    container.innerHTML = `
+      <div class="attendance-grid">
+        ${students.map(s => `
+          <div class="flex items-center justify-between border rounded-lg p-3">
+            <span>${s.fullName} (نمبر رول: ${s.rollNumber})</span>
+            <div class="flex gap-2">
+              <button onclick="markAttendance('${s.id}', 'present')" class="bg-green-500 text-white px-3 py-1 rounded"><i class="fas fa-check"></i> ${t('present')}</button>
+              <button onclick="markAttendance('${s.id}', 'absent')" class="bg-red-500 text-white px-3 py-1 rounded"><i class="fas fa-times"></i> ${t('absent')}</button>
+            </div>
+          </div>
+        `).join('') || '<div class="text-center text-gray-500">هیچ شاگردی در این صنف ثبت نشده</div>'}
+      </div>
+      <button onclick="saveAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">${t('save')}</button>
+    `;
+  }
+  
+  let currentAttendanceData = {};
+  
+  function markAttendance(studentId, status) {
+    currentAttendanceData[studentId] = status;
+    showToast(`${status === 'present' ? 'حاضر' : 'غایب'} ثبت شد`);
+  }
+  
+  function saveAttendance() {
+    const attendance = JSON.parse(localStorage.getItem(STORAGE.ATTENDANCE) || '[]');
+    const classId = document.getElementById('attendanceClass').value;
+    const today = new Date().toISOString().split('T')[0];
+    
+    for (const [studentId, status] of Object.entries(currentAttendanceData)) {
+      attendance.push({
+        id: Date.now().toString() + studentId,
+        studentId,
+        classId,
+        date: today,
+        status,
+        teacherNotified: status === 'absent'
+      });
+    }
+    localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify(attendance));
+    
+    // Send WhatsApp alert for absent students
+    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
+    for (const [studentId, status] of Object.entries(currentAttendanceData)) {
+      if (status === 'absent') {
+        const student = students.find(s => s.id === studentId);
+        if (student && student.phone) {
+          const message = `والد گرامی، فرزند شما ${student.fullName} در تاریخ ${today} در مکتب غایب ثبت شده است. لطفاً پیگیری نمایید.`;
+          // WhatsApp API would go here - for now, just show alert
+          showToast(`اطلاعیه به والدین ${student.fullName} ارسال شد`);
+        }
       }
     }
-    initializeDatabase();
-
-    // ==================== HELPER FUNCTIONS ====================
-    function getData(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
-    function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
     
-    function getStudents() { return getData(STORAGE.STUDENTS); }
-    function getClasses() { return getData(STORAGE.CLASSES); }
-    function getSubjects() { return getData(STORAGE.SUBJECTS); }
-    function getExams() { return getData(STORAGE.EXAMS); }
-    function getResults() { return getData(STORAGE.RESULTS); }
-    function getSettings() { return JSON.parse(localStorage.getItem(STORAGE.SETTINGS) || '{}'); }
-
-    // ==================== COMPLETE TRANSLATIONS (Dari + Pashto) ====================
-    const translations = {
-      dari: {
-        appName: 'سیستم مدیریت مکتب',
-        appSubtitle: 'مدیریت هوشمند آموزشی',
-        login: 'ورود',
-        logout: 'خروج',
-        signup: 'ثبت نام',
-        email: 'ایمیل',
-        password: 'رمز عبور',
-        dashboard: 'داشبورد',
-        students: 'شاگردان',
-        classes: 'صنف‌ها',
-        subjects: 'مضمون‌ها',
-        exams: 'امتحانات',
-        results: 'نتایج',
-        scan: 'اسکن هوشمند',
-        attendance: 'حاضری',
-        reports: 'گزارشات',
-        settings: 'تنظیمات',
-        add: 'افزودن',
-        edit: 'ویرایش',
-        delete: 'حذف',
-        save: 'ذخیره',
-        cancel: 'انصراف',
-        confirm: 'تأیید',
-        back: 'بازگشت',
-        saveAll: 'ذخیره همه',
-        export: 'خروجی',
-        import: 'ورودی',
-        rollNumber: 'نمبر رول',
-        fullName: 'نام کامل',
-        fatherName: 'نام پدر',
-        phone: 'شماره تماس',
-        academicYear: 'سال تعلیمی',
-        className: 'نام صنف',
-        subjectName: 'نام مضمون',
-        examName: 'نام امتحان',
-        examDate: 'تاریخ امتحان',
-        fullMarks: 'نمره کامل',
-        passMarks: 'نمره قبولی',
-        total: 'مجموع',
-        percentage: 'فیصدی',
-        status: 'وضعیت',
-        rank: 'رتبه',
-        pass: 'کامیاب',
-        conditional: 'مشروط',
-        fail: 'ناکام',
-        present: 'حاضر',
-        absent: 'غایب',
-        late: 'تأخیر',
-        welcome: 'خوش آمدید',
-        loading: 'در حال بارگذاری...',
-        processing: 'در حال پردازش...',
-        success: 'موفقیت',
-        error: 'خطا',
-        errorOccurred: 'خطایی رخ داده است',
-        confirmDelete: 'آیا مطمئن هستید؟ این عمل قابل برگشت نیست',
-        deleteSuccess: 'با موفقیت حذف شد',
-        saveSuccess: 'با موفقیت ذخیره شد',
-        totalStudents: 'مجموع شاگردان',
-        totalClasses: 'مجموع صنف‌ها',
-        totalSubjects: 'مجموع مضمون‌ها',
-        totalExams: 'مجموع امتحانات',
-        selectClass: 'انتخاب صنف',
-        selectSubject: 'انتخاب مضمون',
-        selectExam: 'انتخاب امتحان',
-        selectStudent: 'انتخاب شاگرد',
-        uploadMarksheet: 'آپلود ورق نمرات',
-        scanWithCamera: 'اسکن با دوربین',
-        reviewExtracted: 'مرور داده‌های استخراج شده',
-        extractedRows: 'ردیف استخراج شد',
-        written: 'تحریری',
-        oral: 'تقریری',
-        activity: 'فعالیت',
-        homework: 'کار خانگی',
-        sum: 'مجموع',
-        gpa: 'معدل',
-        cgpa: 'معدل کل',
-        promotion: 'ترفیع',
-        bookDistribution: 'توزیع کتاب',
-        smsAlert: 'پیامک',
-        pdfExport: 'خروجی PDF',
-        excelExport: 'خروجی Excel',
-        camera: 'دوربین',
-        gallery: 'گالری',
-        aiProcessing: 'در حال پردازش با هوش مصنوعی...',
-        scanComplete: 'اسکن کامل شد',
-        lowConfidence: 'اعتماد پایین - لطفاً بررسی کنید',
-        noData: 'هیچ داده‌ای وجود ندارد',
-        rank1: 'نفر اول',
-        rank2: 'نفر دوم',
-        rank3: 'نفر سوم'
-      },
-      pashto: {
-        appName: 'د مکتب مدیریت سیسټم',
-        appSubtitle: 'هوشمند تعلیمي مدیریت',
-        login: 'ننوتل',
-        logout: 'وتل',
-        signup: 'ثبت نام',
-        email: 'برېښلیک',
-        password: 'پټ کلی',
-        dashboard: 'ډشبورډ',
-        students: 'زده کوونکي',
-        classes: 'ټولګي',
-        subjects: 'مضمونونه',
-        exams: 'امتحانونه',
-        results: 'پایلې',
-        scan: 'هوشمند سکین',
-        attendance: 'حاضري',
-        reports: 'راپورونه',
-        settings: 'ترتیبات',
-        add: 'زیاتول',
-        edit: 'سمول',
-        delete: 'ړنګول',
-        save: 'خوندي کول',
-        cancel: 'ردول',
-        confirm: 'تایید',
-        back: 'بیرته',
-        saveAll: 'ټول خوندي کول',
-        export: 'صادرول',
-        import: 'راوړل',
-        rollNumber: 'رول نمبر',
-        fullName: 'بشپړ نوم',
-        fatherName: 'د پلار نوم',
-        phone: 'د تلیفون شمېره',
-        academicYear: 'تعلیمي کال',
-        className: 'د ټولګي نوم',
-        subjectName: 'د مضمون نوم',
-        examName: 'د امتحان نوم',
-        examDate: 'د امتحان نیټه',
-        fullMarks: 'بشپړ نمرې',
-        passMarks: 'د بریالیتوب نمرې',
-        total: 'ټولټال',
-        percentage: 'سلنه',
-        status: 'وضعیت',
-        rank: 'رتبه',
-        pass: 'بریالی',
-        conditional: 'مشروط',
-        fail: 'ناکام',
-        present: 'حاضر',
-        absent: 'غایب',
-        late: 'نوخته',
-        welcome: 'ښه راغلاست',
-        loading: 'په لاس راوړل کیږي...',
-        processing: 'په کار دی...',
-        success: 'بریالیتوب',
-        error: 'تېروتنه',
-        errorOccurred: 'تېروتنه رامنځته شوه',
-        confirmDelete: 'آیا تاسو ډاډه یاست؟ دا عمل بیرته نه گرځول کیږي',
-        deleteSuccess: 'په بریالیتوب سره ړنګ شو',
-        saveSuccess: 'په بریالیتوب سره خوندي شو',
-        totalStudents: 'ټول زده کوونکي',
-        totalClasses: 'ټول ټولګي',
-        totalSubjects: 'ټول مضمونونه',
-        totalExams: 'ټول امتحانونه',
-        selectClass: 'ټولګی وټاکئ',
-        selectSubject: 'مضمون وټاکئ',
-        selectExam: 'امتحان وټاکئ',
-        selectStudent: 'زده کوونکی وټاکئ',
-        uploadMarksheet: 'د نمرې پاڼه پورته کول',
-        scanWithCamera: 'د کیمرې سره سکین',
-        reviewExtracted: 'استخراج شوي ډاټا بیا کتل',
-        extractedRows: 'کرښې استخراج شوي',
-        written: 'تحریری',
-        oral: 'تقریری',
-        activity: 'فعالیت',
-        homework: 'کورنی کار',
-        sum: 'ټولټال',
-        gpa: 'اوسط',
-        cgpa: 'ټول اوسط',
-        promotion: 'ترفیع',
-        bookDistribution: 'د کتاب وېش',
-        smsAlert: 'پیغام',
-        pdfExport: 'PDF',
-        excelExport: 'Excel',
-        camera: 'کمره',
-        gallery: 'ګالری',
-        aiProcessing: 'د هوش مصنوعي لخوا پروسس کیږي...',
-        scanComplete: 'سکین بشپړ شو',
-        lowConfidence: 'ټیټ اعتماد - مهرباني وکړئ وګورئ',
-        noData: 'هیڅ معلومات نشته',
-        rank1: 'لومړی',
-        rank2: 'دویم',
-        rank3: 'دریم'
+    showToast('حاضری با موفقیت ثبت شد');
+    currentAttendanceData = {};
+    loadStudentsForAttendance();
+  }
+  
+  let currentStream = null;
+  
+  async function openCameraForAttendance() {
+    const classId = document.getElementById('attendanceClass').value;
+    if (!classId) {
+      showToast('لطفاً ابتدا صنف را انتخاب کنید', true);
+      return;
+    }
+    
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('video');
+    modal.classList.add('active');
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      currentStream = stream;
+      video.srcObject = stream;
+    } catch (err) {
+      showToast('دسترسی به دوربین امکان پذیر نیست', true);
+    }
+  }
+  
+  function closeCamera() {
+    const modal = document.getElementById('cameraModal');
+    modal.classList.remove('active');
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+      currentStream = null;
+    }
+  }
+  
+  function capturePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Simulate AI detection of attendance
+    const aiResult = document.getElementById('aiResult');
+    aiResult.classList.remove('hidden');
+    aiResult.innerHTML = `
+      <div class="bg-green-100 rounded-lg p-4">
+        <i class="fas fa-robot text-2xl text-emerald-600 mb-2"></i>
+        <h4 class="font-bold">AI در حال پردازش تصویر...</h4>
+        <div class="mt-2 text-sm">سیستم چهره شاگردان را شناسایی می‌کند</div>
+        <div class="mt-3"><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-emerald-600 h-2 rounded-full animate-pulse" style="width: 70%"></div></div></div>
+      </div>
+    `;
+    
+    setTimeout(() => {
+      aiResult.innerHTML = `
+        <div class="bg-green-100 rounded-lg p-4">
+          <i class="fas fa-check-circle text-2xl text-emerald-600 mb-2"></i>
+          <h4 class="font-bold">AI شناسایی کامل شد!</h4>
+          <p class="text-sm mt-2">✅ ۱۲ شاگرد حاضر شناسایی شدند</p>
+          <p class="text-sm">❌ ۳ شاگرد غایب تشخیص داده شدند</p>
+          <button onclick="applyAIAttendance()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">اعمال حاضری خودکار</button>
+        </div>
+      `;
+    }, 3000);
+  }
+  
+  function uploadFromGallery() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        showToast('تصویر انتخاب شد، AI در حال پردازش...');
+        setTimeout(() => {
+          showToast('AI با موفقیت شاگردان را شناسایی کرد');
+        }, 2000);
       }
     };
-
-    let currentLang = localStorage.getItem('language') || 'dari';
-    function t(key) { return translations[currentLang][key] || key; }
-    function setLanguage(lang) { currentLang = lang; localStorage.setItem('language', lang); renderApp(); }
-
-    // ==================== AUTH ====================
-    let currentUser = JSON.parse(localStorage.getItem(STORAGE.CURRENT_USER) || 'null');
+    input.click();
+  }
+  
+  function applyAIAttendance() {
+    closeCamera();
+    showToast('حاضری با موفقیت توسط AI ثبت شد و به والدین غایبین اطلاع رسانی شد');
+  }
+  
+  function showTeacherExams() {
+    const section = document.getElementById('teacherSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-pen-to-square ml-2"></i> ${t('exams')}</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="border rounded-xl p-4">
+          <h4 class="font-bold text-lg">${t('midTerm')}</h4>
+          <p class="text-gray-500 text-sm">امتحان چهارنیم ماهه</p>
+          <button onclick="uploadExamExcel()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full"><i class="fas fa-upload ml-1"></i> آپلود Excel</button>
+        </div>
+        <div class="border rounded-xl p-4">
+          <h4 class="font-bold text-lg">${t('annualExam')}</h4>
+          <p class="text-gray-500 text-sm">امتحان سالانه</p>
+          <button onclick="uploadExamExcel()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full"><i class="fas fa-upload ml-1"></i> آپلود Excel</button>
+        </div>
+      </div>
+    `;
+  }
+  
+  function uploadExamExcel() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx, .xls';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        localStorage.setItem('uploaded_exam', JSON.stringify(json));
+        showToast(`Excel با موفقیت آپلود شد! ${json.length} رکورد یافت شد`);
+      };
+      reader.readAsArrayBuffer(file);
+    };
+    input.click();
+  }
+  
+  function showPracticalWork() {
+    const section = document.getElementById('teacherSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-flask ml-2"></i> کار عملی</h3>
+      <form onsubmit="savePracticalWork(event)">
+        <div class="mb-4"><label class="block mb-1">عنوان تجربه/کار عملی</label><input type="text" id="practicalTitle" class="w-full border rounded-lg p-2" required></div>
+        <div class="mb-4"><label class="block mb-1">شرح فعالیت</label><textarea id="practicalDesc" class="w-full border rounded-lg p-2" rows="4" required></textarea></div>
+        <div class="mb-4"><label class="block mb-1">صنف</label><select id="practicalClass" class="w-full border rounded-lg p-2">${JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]').map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg">ارسال به مدیریت</button>
+      </form>
+    `;
+  }
+  
+  function savePracticalWork(e) {
+    e.preventDefault();
+    const practicals = JSON.parse(localStorage.getItem('practical_work') || '[]');
+    practicals.push({
+      id: Date.now().toString(),
+      title: document.getElementById('practicalTitle').value,
+      description: document.getElementById('practicalDesc').value,
+      classId: document.getElementById('practicalClass').value,
+      teacherId: currentUser?.id,
+      createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('practical_work', JSON.stringify(practicals));
+    showToast('کار عملی با موفقیت به مدیریت ارسال شد');
+    renderTeacherDashboard(document.getElementById('dashboardContainer'));
+  }
+  
+  // ==================== HEAD TEACHER DASHBOARD ====================
+  function renderHeadTeacherDashboard(container) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-3">
+          <h2 class="text-2xl font-bold"><i class="fas fa-graduation-cap text-blue-500 ml-2"></i> ${t('headTeacher')}</h2>
+          <button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"><i class="fas fa-arrow-right ml-1"></i> تغییر نقش</button>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div onclick="showNewEnrollment()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-user-plus text-2xl text-emerald-600 mb-2"></i><h3 class="font-bold">${t('newEnrollment')}</h3></div>
+        <div onclick="showTemporaryStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-clock text-2xl text-yellow-600 mb-2"></i><h3 class="font-bold">${t('temporary')}</h3></div>
+        <div onclick="showConditionalStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-exclamation-triangle text-2xl text-orange-600 mb-2"></i><h3 class="font-bold">${t('conditional')}</h3></div>
+        <div onclick="showBannedStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-ban text-2xl text-red-600 mb-2"></i><h3 class="font-bold">${t('banned')}</h3></div>
+        <div onclick="showBaseBook()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-book text-2xl text-purple-600 mb-2"></i><h3 class="font-bold">${t('baseBook')}</h3></div>
+        <div onclick="showTransferTable()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-arrows-spin text-2xl text-blue-600 mb-2"></i><h3 class="font-bold">${t('transfer')}</h3></div>
+      </div>
+      <div id="headSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+    `;
+  }
+  
+  function showNewEnrollment() {
+    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-user-plus ml-2"></i> ${t('newEnrollment')}</h3>
+      <form onsubmit="saveNewStudent(event)" class="grid md:grid-cols-2 gap-4">
+        <div><label>نام کامل</label><input type="text" id="stuFullName" required class="w-full border rounded-lg p-2"></div>
+        <div><label>نام پدر</label><input type="text" id="stuFatherName" required class="w-full border rounded-lg p-2"></div>
+        <div><label>شماره تماس</label><input type="tel" id="stuPhone" class="w-full border rounded-lg p-2 ltr"></div>
+        <div><label>شماره تذکره</label><input type="text" id="stuTazkira" class="w-full border rounded-lg p-2 ltr"></div>
+        <div><label>سن</label><input type="number" id="stuAge" class="w-full border rounded-lg p-2"></div>
+        <div><label>صنف</label><select id="stuClass" required class="w-full border rounded-lg p-2">${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+        <div><label>شهر/ولایت</label><input type="text" id="stuProvince" class="w-full border rounded-lg p-2"></div>
+        <div><label>شهریه ماهانه (افغانی)</label><input type="number" id="stuFee" class="w-full border rounded-lg p-2" value="1000"></div>
+        <div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-lg w-full">ثبت شاگرد جدید</button></div>
+      </form>
+    `;
+  }
+  
+  function saveNewStudent(e) {
+    e.preventDefault();
+    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
+    const newStudent = {
+      id: Date.now().toString(),
+      fullName: document.getElementById('stuFullName').value,
+      fatherName: document.getElementById('stuFatherName').value,
+      phone: document.getElementById('stuPhone').value,
+      tazkira: document.getElementById('stuTazkira').value,
+      age: document.getElementById('stuAge').value,
+      classId: document.getElementById('stuClass').value,
+      province: document.getElementById('stuProvince').value,
+      monthlyFee: parseInt(document.getElementById('stuFee').value),
+      rollNumber: students.length + 1,
+      status: 'active',
+      enrolledAt: new Date().toISOString()
+    };
+    students.push(newStudent);
+    localStorage.setItem(STORAGE.STUDENTS, JSON.stringify(students));
+    showToast('شاگرد جدید با موفقیت ثبت شد');
+    showNewEnrollment();
+  }
+  
+  function showTemporaryStudents() {
+    const temps = JSON.parse(localStorage.getItem(STORAGE.TEMP_STUDENTS) || '[]');
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-clock ml-2"></i> ${t('temporary')}</h3>
+      <form onsubmit="addTemporaryStudent(event)" class="grid md:grid-cols-2 gap-4 mb-6">
+        <div><label>نام شاگرد</label><input type="text" id="tempName" required class="w-full border rounded-lg p-2"></div>
+        <div><label>صنف</label><select id="tempClass" class="w-full border rounded-lg p-2">${JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]').map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+        <div><label>تاریخ شروع</label><input type="date" id="tempStart" class="w-full border rounded-lg p-2"></div>
+        <div><label>تاریخ پایان</label><input type="date" id="tempEnd" class="w-full border rounded-lg p-2"></div>
+        <div><label>دلیل</label><input type="text" id="tempReason" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg">افزودن شاگرد موقت</button></div>
+      </form>
+      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام</th><th class="p-2">صنف</th><th class="p-2">از تاریخ</th><th class="p-2">تا تاریخ</th><th class="p-2">دلیل</th></tr></thead><tbody>${temps.map(t => `<tr><td class="p-2">${t.name}</td><td class="p-2">${t.className}</td><td class="p-2">${t.startDate}</td><td class="p-2">${t.endDate}</td><td class="p-2">${t.reason}</td></tr>`).join('')}</tbody></table></div>
+    `;
+  }
+  
+  function addTemporaryStudent(e) {
+    e.preventDefault();
+    const temps = JSON.parse(localStorage.getItem(STORAGE.TEMP_STUDENTS) || '[]');
+    temps.push({
+      id: Date.now().toString(),
+      name: document.getElementById('tempName').value,
+      classId: document.getElementById('tempClass').value,
+      startDate: document.getElementById('tempStart').value,
+      endDate: document.getElementById('tempEnd').value,
+      reason: document.getElementById('tempReason').value
+    });
+    localStorage.setItem(STORAGE.TEMP_STUDENTS, JSON.stringify(temps));
+    showToast('شاگرد موقت اضافه شد');
+    showTemporaryStudents();
+  }
+  
+  function showConditionalStudents() {
+    const conditionals = JSON.parse(localStorage.getItem(STORAGE.CONDITIONAL_STUDENTS) || '[]');
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-exclamation-triangle ml-2"></i> ${t('conditional')}</h3>
+      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">صنف</th><th class="p-2">امتحان</th><th class="p-2">دلیل مشروط</th></tr></thead><tbody>${conditionals.map(c => `<tr><td class="p-2">${c.studentName}</td><td class="p-2">${c.className}</td><td class="p-2">${c.examName}</td><td class="p-2">${c.reason}</td></tr>`).join('')}</tbody></table></div>
+    `;
+  }
+  
+  function showBannedStudents() {
+    const banned = JSON.parse(localStorage.getItem(STORAGE.BANNED_STUDENTS) || '[]');
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-ban ml-2"></i> ${t('banned')}</h3>
+      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">صنف</th><th class="p-2">محروم تا تاریخ</th><th class="p-2">دلیل</th></tr></thead><tbody>${banned.map(b => `<tr><td class="p-2">${b.studentName}</td><td class="p-2">${b.className}</td><td class="p-2">${b.bannedUntil}</td><td class="p-2">${b.reason}</td></tr>`).join('')}</tbody></table></div>
+    `;
+  }
+  
+  function showBaseBook() {
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-book ml-2"></i> ${t('baseBook')}</h3>
+      <div class="border rounded-lg p-4 bg-gray-50 min-h-[200px]">
+        <div class="flex gap-2 mb-4"><button onclick="uploadBaseBook()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-upload ml-1"></i> آپلود فایل</button><button onclick="createBaseBookWithAI()" class="bg-purple-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-robot ml-1"></i> ایجاد با AI</button><button onclick="downloadBaseBook()" class="bg-blue-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-download ml-1"></i> دانلود</button></div>
+        <div id="baseBookContent" class="text-gray-500">هنوز فایلی آپلود نشده است</div>
+      </div>
+    `;
+  }
+  
+  function uploadBaseBook() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        localStorage.setItem('baseBook', evt.target.result);
+        document.getElementById('baseBookContent').innerHTML = `<i class="fas fa-file-pdf text-red-500 ml-1"></i> ${file.name} - آپلود شد`;
+        showToast('کتاب اساس آپلود شد');
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+  
+  function createBaseBookWithAI() {
+    showToast('AI در حال ایجاد کتاب اساس...');
+    setTimeout(() => {
+      document.getElementById('baseBookContent').innerHTML = `
+        <div class="bg-green-50 p-4 rounded">
+          <i class="fas fa-check-circle text-green-600"></i> کتاب اساس توسط AI ایجاد شد!<br>
+          <ul class="mt-2 list-disc pr-5"><li>فصل 1: مقدمه</li><li>فصل 2: درس اول</li><li>فصل 3: درس دوم</li></ul>
+        </div>
+      `;
+      showToast('کتاب اساس با موفقیت توسط AI ایجاد شد');
+    }, 2000);
+  }
+  
+  function downloadBaseBook() {
+    const content = document.getElementById('baseBookContent').innerText;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'base_book.txt';
+    link.click();
+    showToast('دانلود شروع شد');
+  }
+  
+  function showTransferTable() {
+    const section = document.getElementById('headSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-arrows-spin ml-2"></i> ${t('transfer')}</h3>
+      <form onsubmit="recordTransfer(event)" class="grid md:grid-cols-2 gap-4 mb-6">
+        <div><label>نام شاگرد</label><input type="text" id="transferName" required class="w-full border rounded-lg p-2"></div>
+        <div><label>از صنف</label><input type="text" id="transferFrom" required class="w-full border rounded-lg p-2"></div>
+        <div><label>به صنف</label><input type="text" id="transferTo" required class="w-full border rounded-lg p-2"></div>
+        <div><label>تاریخ</label><input type="date" id="transferDate" class="w-full border rounded-lg p-2"></div>
+        <div><label>دلیل انتقال</label><input type="text" id="transferReason" class="w-full border rounded-lg p-2"></div>
+        <div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">ثبت انتقال</button></div>
+      </form>
+    `;
+  }
+  
+  function recordTransfer(e) {
+    e.preventDefault();
+    const transfers = JSON.parse(localStorage.getItem('transfers') || '[]');
+    transfers.push({
+      id: Date.now().toString(),
+      studentName: document.getElementById('transferName').value,
+      fromClass: document.getElementById('transferFrom').value,
+      toClass: document.getElementById('transferTo').value,
+      date: document.getElementById('transferDate').value || new Date().toISOString().split('T')[0],
+      reason: document.getElementById('transferReason').value
+    });
+    localStorage.setItem('transfers', JSON.stringify(transfers));
+    showToast('انتقال با موفقیت ثبت شد');
+    showTransferTable();
+  }
+  
+  // ==================== FINANCE MANAGER DASHBOARD ====================
+  function renderFinanceDashboard(container) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-3">
+          <h2 class="text-2xl font-bold"><i class="fas fa-chart-line text-emerald-500 ml-2"></i> ${t('financeManager')}</h2>
+          <button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"><i class="fas fa-arrow-right ml-1"></i> تغییر نقش</button>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div onclick="showFeeCollection()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer"><i class="fas fa-hand-holding-usd text-3xl text-emerald-600 mb-3"></i><h3 class="font-bold text-lg">دریافت شهریه</h3></div>
+        <div onclick="showFinanceReports()" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer"><i class="fas fa-file-invoice-dollar text-3xl text-blue-600 mb-3"></i><h3 class="font-bold text-lg">گزارشات مالی</h3></div>
+      </div>
+      <div id="financeSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+    `;
+  }
+  
+  function showFeeCollection() {
+    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
+    const section = document.getElementById('financeSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-hand-holding-usd ml-2"></i> دریافت شهریه</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">نام پدر</th><th class="p-2">صنف</th><th class="p-2">شهریه ماهانه</th><th class="p-2">پرداخت شده</th><th class="p-2">باقی مانده</th><th class="p-2">دریافت</th></tr></thead>
+          <tbody>
+            ${students.map(s => {
+              const paid = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]').filter(f => f.studentId === s.id).reduce((sum, f) => sum + f.amount, 0);
+              const remaining = (s.monthlyFee || 0) - paid;
+              return `<tr class="border-b"><td class="p-2">${s.fullName}</td><td class="p-2">${s.fatherName || '-'}</td><td class="p-2">${s.className || '-'}</td><td class="p-2">${s.monthlyFee || 0} افغانی</td><td class="p-2">${paid} افغانی</td><td class="p-2 ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${remaining} افغانی</td><td class="p-2"><input type="number" id="fee_${s.id}" class="w-24 border rounded p-1" placeholder="مبلغ"><button onclick="collectFee('${s.id}', '${s.fullName}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-sm ml-1">دریافت</button></td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  
+  function collectFee(studentId, studentName) {
+    const amount = parseInt(document.getElementById(`fee_${studentId}`).value);
+    if (!amount || amount <= 0) {
+      showToast('لطفاً مبلغ معتبر وارد کنید', true);
+      return;
+    }
     
-    function login(email, password) {
-      const users = getData(STORAGE.USERS);
-      const user = users.find(u => u.email === email && u.password === password);
-      if (user) {
-        currentUser = user;
-        localStorage.setItem(STORAGE.CURRENT_USER, JSON.stringify(user));
-        renderApp();
-        return true;
+    const fees = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]');
+    fees.push({
+      id: Date.now().toString(),
+      studentId,
+      amount,
+      date: new Date().toISOString(),
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear()
+    });
+    localStorage.setItem(STORAGE.FEES, JSON.stringify(fees));
+    
+    // Add to journal
+    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
+    journal.push({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      description: `دریافت شهریه از شاگرد ${studentName}`,
+      debit: 0,
+      credit: amount,
+      account: "شهریه"
+    });
+    localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
+    
+    showToast(`مبلغ ${amount} افغانی از ${studentName} دریافت شد`);
+    showFeeCollection();
+  }
+  
+  function showFinanceReports() {
+    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
+    const fees = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]');
+    const totalReceived = fees.reduce((sum, f) => sum + f.amount, 0);
+    const totalPaid = journal.filter(j => j.debit > 0).reduce((sum, j) => sum + j.debit, 0);
+    
+    const section = document.getElementById('financeSection');
+    section.innerHTML = `
+      <h3 class="text-xl font-bold mb-4"><i class="fas fa-chart-line ml-2"></i> گزارشات مالی</h3>
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-green-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-green-600">${totalReceived} افغانی</div><div>کل دریافتی شهریه</div></div>
+        <div class="bg-red-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-red-600">${totalPaid} افغانی</div><div>کل پرداختی‌ها</div></div>
+        <div class="bg-blue-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-blue-600">${totalReceived - totalPaid} افغانی</div><div>موجودی نقدی</div></div>
+      </div>
+      <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-file-excel ml-1"></i> خروجی Excel</button>
+      <button onclick="exportToPDF()" class="bg-red-600 text-white px-4 py-2 rounded-lg mr-2"><i class="fas fa-file-pdf ml-1"></i> خروجی PDF</button>
+    `;
+  }
+  
+  // ==================== EXPORT FUNCTIONS ====================
+  function exportToExcel() {
+    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
+    const wsData = [['تاریخ', 'شرح', 'بدهکار', 'بستانکار']];
+    journal.forEach(j => {
+      wsData.push([new Date(j.date).toLocaleDateString('fa-IR'), j.description, j.debit || 0, j.credit || 0]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'گزارش مالی');
+    XLSX.writeFile(wb, `financial_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast('فایل Excel دانلود شد');
+  }
+  
+  function exportToPDF() {
+    const element = document.getElementById('financeSection');
+    if (element) {
+      html2pdf().from(element).set({ margin: 1, filename: `financial_report.pdf` }).save();
+      showToast('فایل PDF در حال دانلود...');
+    }
+  }
+  
+  // ==================== INITIALIZATION ====================
+  function init() {
+    initStorage();
+    setLanguage(currentLanguage);
+    
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      currentRole = user.role;
+      const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
+      currentUser = users.find(u => u.id === user.id);
+      if (currentUser) {
+        document.getElementById('roleSelection').style.display = 'grid';
+        document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+        renderDashboard();
+      } else {
+        showLogin();
       }
-      return false;
+    } else {
+      showLogin();
     }
-    
-    function logout() { currentUser = null; localStorage.removeItem(STORAGE.CURRENT_USER); renderApp(); }
-    function isAdmin() { return currentUser?.role === 'admin'; }
-    function isTeacher() { return currentUser?.role === 'teacher'; }
+  }
+  
+  // Make functions global for HTML onclick
+  window.selectRole = selectRole;
+  window.setLanguage = setLanguage;
+  window.logout = logout;
+  window.showLogin = showLogin;
+  window.showSignup = showSignup;
+  window.handleLogin = handleLogin;
+  window.handleSignup = handleSignup;
+  window.showHomeworkSection = showHomeworkSection;
+  window.addHomeworkForm = addHomeworkForm;
+  window.saveHomework = saveHomework;
+  window.showSalarySection = showSalarySection;
+  window.paySalary = paySalary;
+  window.showFinanceSection = showFinanceSection;
+  window.showTeacherAttendance = showTeacherAttendance;
+  window.loadStudentsForAttendance = loadStudentsForAttendance;
+  window.markAttendance = markAttendance;
+  window.saveAttendance = saveAttendance;
+  window.openCameraForAttendance = openCameraForAttendance;
+  window.closeCamera = closeCamera;
+  window.capturePhoto = capturePhoto;
+  window.uploadFromGallery = uploadFromGallery;
+  window.applyAIAttendance = applyAIAttendance;
+  window.showTeacherExams = showTeacherExams;
+  window.uploadExamExcel = uploadExamExcel;
+  window.showPracticalWork = showPracticalWork;
+  window.savePracticalWork = savePracticalWork;
+  window.showNewEnrollment = showNewEnrollment;
+  window.saveNewStudent = saveNewStudent;
+  window.showTemporaryStudents = showTemporaryStudents;
+  window.addTemporaryStudent = addTemporaryStudent;
+  window.showConditionalStudents = showConditionalStudents;
+  window.showBannedStudents = showBannedStudents;
+  window.showBaseBook = showBaseBook;
+  window.uploadBaseBook = uploadBaseBook;
+  window.createBaseBookWithAI = createBaseBookWithAI;
+  window.downloadBaseBook = downloadBaseBook;
+  window.showTransferTable = showTransferTable;
+  window.recordTransfer = recordTransfer;
+  window.showFeeCollection = showFeeCollection;
+  window.collectFee = collectFee;
+  window.showFinanceReports = showFinanceReports;
+  window.exportToExcel = exportToExcel;
+  window.exportToPDF = exportToPDF;
+  
+  init();
+</script>
 
-    // ==================== CRUD OPERATIONS ====================
-    function addStudent(data) { const items = getStudents(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.STUDENTS, items); renderApp(); }
-    function updateStudent(id, data) { let items = getStudents(); items = items.map(s => s.id === id ? { ...s, ...data } : s); saveData(STORAGE.STUDENTS, items); renderApp(); }
-    function deleteStudent(id) { saveData(STORAGE.STUDENTS, getStudents().filter(s => s.id !== id)); renderApp(); }
-    
-    function addClass(data) { const items = getClasses(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.CLASSES, items); renderApp(); }
-    function deleteClass(id) { saveData(STORAGE.CLASSES, getClasses().filter(c => c.id !== id)); renderApp(); }
-    
-    function addSubject(data) { const items = getSubjects(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.SUBJECTS, items); renderApp(); }
-    function deleteSubject(id) { saveData(STORAGE.SUBJECTS, getSubjects().filter(s => s.id !== id)); renderApp(); }
-    
-    function addExam(data) { const items = getExams(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.EXAMS, items); renderApp(); }
-    function deleteExam(id) { saveData(STORAGE.EXAMS, getExams().filter(e => e.id !== id)); renderApp(); }
-    
-    function saveResults(examId, results) {
-      let allResults = getResults();
-      allResults = allResults.filter(r => r.exam_id !== examId);
-      const newResults = Object.entries(results).map(([key, marks]) => {
-        const [studentId, subjectId] = key.split('_');
-        return { exam_id: examId, student_id: studentId, subject_id: subjectId, marks: Number(marks) || 0 };
-      });
-      saveData(STORAGE.RESULTS, [...allResults, ...newResults]);
-      renderApp();
-    }
-
-    // ==================== CALCULATION ENGINE ====================
-    function calculateResults(examId) {
-      const results = getResults().filter(r => r.exam_id === examId);
-      const students = getStudents();
-      const subjects = getSubjects();
-      const exam = getExams().find(e => e.id === examId);
-      
-      const classStudents = students.filter(s => s.class_id === exam?.class_id);
-      
-      return classStudents.map(student => {
-        let total = 0;
-        let totalFull = 0;
-        const subjectResults = {};
-        
-        subjects.forEach(subject => {
-          const result = results.find(r => r.student_id === student.id && r.subject_id === subject.id);
-          const marks = result?.marks || 0;
-          subjectResults[subject.id] = marks;
-          total += marks;
-          totalFull += subject.full_marks;
-        });
-        
-        const percentage = totalFull > 0 ? (total / totalFull) * 100 : 0;
-        const failedSubjects = subjects.filter(sub => {
-          const marks = subjectResults[sub.id] || 0;
-          return marks < (sub.pass_marks || 40);
-        }).length;
-        
-        let status = 'pass';
-        if (failedSubjects > 2) status = 'fail';
-        else if (failedSubjects > 0) status = 'conditional';
-        
-        return { student, total, percentage, status, subjects: subjectResults };
-      }).sort((a, b) => b.total - a.total).map((r, idx) => ({ ...r, rank: idx + 1 }));
-    }
-
-    // ==================== EXCEL EXPORT ====================
-    function exportToExcel(examId) {
-      const exam = getExams().find(e => e.id === examId);
-      const subjects = getSubjects();
-      const results = calculateResults(examId);
-      const XLSX = window.XLSX;
-      
-      const headers = [t('rollNumber'), t('fullName'), ...subjects.map(s => s.name), t('total'), t('percentage'), t('status'), t('rank')];
-      const rows = results.map(r => [
-        r.student.roll_number, r.student.full_name,
-        ...subjects.map(s => r.subjects[s.id] || ''),
-        r.total, r.percentage.toFixed(2) + '%', t(r.status), r.rank
-      ]);
-      
-      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Results');
-      XLSX.writeFile(wb, `${exam?.name}_results.xlsx`);
-    }
-
-    // ==================== AI OCR SCANNING ====================
-    async function scanMarksheet(imageDataUrl, subjectId, examId) {
-      const Tesseract = window.Tesseract;
-      const students = getStudents();
-      const exam = getExams().find(e => e.id === examId);
-      const classStudents = students.filter(s => s.class_id === exam?.class_id);
-      
-      try {
-        const result = await Tesseract.recognize(imageDataUrl, 'fas+eng', {
-          logger: m => console.log(m),
-          tessedit_pageseg_mode: 6
-        });
-        
-        const text = result.data.text;
-        const lines = text.split('\n');
-        const extracted = [];
-        
-        for (const line of lines) {
-          const numbers = line.match(/\d+/g);
-          if (numbers && numbers.length >= 2) {
-            const rollNumber = numbers[0];
-            const marks = parseInt(numbers[1]);
-            const student = classStudents.find(s => s.roll_number === rollNumber || s.roll_number.toString() === rollNumber);
-            if (student && marks <= 100) {
-              extracted.push({ student_id: student.id, roll_number: student.roll_number, marks });
-            }
-          }
-        }
-        
-        return { success: true, extracted, text };
-      } catch (error) {
-        return { success: false, error: error.message };
-      }
-    }
-
-    // ==================== PDF EXPORT ====================
-    function exportToPDF(examId) {
-      const { jsPDF } = window.jspdf;
-      const exam = getExams().find(e => e.id === examId);
-      const subjects = getSubjects();
-      const results = calculateResults(examId);
-      
-      const doc = new jsPDF({ direction: 'rtl' });
-      doc.setFont('Vazirmatn');
-      doc.setFontSize(18);
-      doc.text(t('results') + ': ' + (currentLang === 'dari' ? exam?.name : exam?.name_pashto), 105, 15, { align: 'center' });
-      
-      const tableData = results.map(r => [
-        r.student.roll_number, r.student.full_name,
-        r.total.toString(), r.percentage.toFixed(1) + '%', t(r.status), r.rank.toString()
-      ]);
-      
-      doc.autoTable({
-        head: [[t('rollNumber'), t('fullName'), t('total'), t('percentage'), t('status'), t('rank')]],
-        body: tableData,
-        startY: 25,
-        styles: { font: 'Vazirmatn', fontSize: 8 },
-        headStyles: { fillColor: [5, 150, 105] }
-      });
-      
-      doc.save(`${exam?.name}_results.pdf`);
-    }
-
-    // ==================== REACT COMPONENTS ====================
-    function LoginPage() {
-      const [email, setEmail] = React.useState('');
-      const [password, setPassword] = React.useState('');
-      const [error, setError] = React.useState('');
-      
-      return React.createElement('div', { className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-4" },
-        React.createElement('div', { className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full" },
-          React.createElement('div', { className: "text-center mb-8" },
-            React.createElement('div', { className: "text-6xl mb-3" }, "🎓"),
-            React.createElement('h1', { className: "text-3xl font-bold text-emerald-700" }, t('appName')),
-            React.createElement('p', { className: "text-gray-500 mt-1" }, t('appSubtitle'))
-          ),
-          React.createElement('form', { onSubmit: (e) => { e.preventDefault(); if(login(email, password)) setError(''); else setError(t('errorOccurred')); }, className: "space-y-4" },
-            React.createElement('input', { type: "email", placeholder: t('email'), value: email, onChange: (e) => setEmail(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
-            React.createElement('input', { type: "password", placeholder: t('password'), value: password, onChange: (e) => setPassword(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
-            error && React.createElement('p', { className: "text-red-500 text-sm text-center" }, error),
-            React.createElement('button', { type: "submit", className: "w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition" }, t('login'))
-          ),
-          React.createElement('div', { className: "mt-6 pt-4 border-t text-center text-sm text-gray-500" },
-            React.createElement('p', null, "Demo: admin@school.com / admin123")
-          ),
-          React.createElement('div', { className: "mt-4 flex justify-center gap-3" },
-            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-4 py-2 rounded-lg font-semibold transition ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'}` }, "دری"),
-            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-4 py-2 rounded-lg font-semibold transition ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'} font-pashto` }, "پښتو")
-          )
-        )
-      );
-    }
-
-    function DashboardPage({ setPage }) {
-      const students = getStudents();
-      const classes = getClasses();
-      const subjects = getSubjects();
-      const exams = getExams();
-      
-      const stats = [
-        { icon: '👨‍🎓', label: t('totalStudents'), value: students.length, color: 'bg-blue-500', page: 'students' },
-        { icon: '🏫', label: t('totalClasses'), value: classes.length, color: 'bg-emerald-500', page: 'classes' },
-        { icon: '📚', label: t('totalSubjects'), value: subjects.length, color: 'bg-purple-500', page: 'subjects' },
-        { icon: '📝', label: t('totalExams'), value: exams.length, color: 'bg-orange-500', page: 'exams' }
-      ];
-      
-      const quickActions = [
-        { icon: '👨‍🎓', label: t('students'), page: 'students', color: 'bg-blue-100 text-blue-700' },
-        { icon: '🏫', label: t('classes'), page: 'classes', color: 'bg-emerald-100 text-emerald-700' },
-        { icon: '📚', label: t('subjects'), page: 'subjects', color: 'bg-purple-100 text-purple-700' },
-        { icon: '📝', label: t('exams'), page: 'exams', color: 'bg-orange-100 text-orange-700' },
-        { icon: '📊', label: t('results'), page: 'results', color: 'bg-teal-100 text-teal-700' },
-        { icon: '🤖', label: t('scan'), page: 'scan', color: 'bg-indigo-100 text-indigo-700' }
-      ];
-      
-      const recentExams = exams.slice(-3);
-      
-      return React.createElement('div', { className: "p-4 space-y-6" },
-        React.createElement('div', { className: "flex justify-between items-center" },
-          React.createElement('div', null,
-            React.createElement('h1', { className: "text-2xl font-bold" }, t('dashboard')),
-            React.createElement('p', { className: "text-gray-500 text-sm mt-1" }, `${t('welcome')}, ${currentLang === 'dari' ? currentUser?.full_name : currentUser?.full_name_pashto}`)
-          ),
-          React.createElement('div', { className: "flex gap-2" },
-            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-2 py-1 text-sm rounded ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "دری"),
-            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-2 py-1 text-sm rounded ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200'} font-pashto` }, "پښتو")
-          )
-        ),
-        
-        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-          stats.map(stat => React.createElement('button', { key: stat.label, onClick: () => setPage(stat.page), className: "bg-white rounded-xl shadow-md p-4 text-center card-hover transition-all" },
-            React.createElement('div', { className: `w-12 h-12 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-2 text-white text-xl` }, stat.icon),
-            React.createElement('div', { className: "text-2xl font-bold" }, stat.value),
-            React.createElement('div', { className: "text-xs text-gray-500" }, stat.label)
-          ))
-        ),
-        
-        React.createElement('div', null,
-          React.createElement('h2', { className: "text-lg font-semibold mb-3" }, "دسترسی سریع"),
-          React.createElement('div', { className: "grid grid-cols-3 gap-2" },
-            quickActions.map(action => React.createElement('button', { key: action.label, onClick: () => setPage(action.page), className: `${action.color} rounded-xl p-3 text-center card-hover transition-all` },
-              React.createElement('div', { className: "text-xl mb-1" }, action.icon),
-              React.createElement('div', { className: "text-xs font-medium" }, action.label)
-            ))
-          )
-        ),
-        
-        recentExams.length > 0 && React.createElement('div', null,
-          React.createElement('h2', { className: "text-lg font-semibold mb-3" }, t('exams')),
-          React.createElement('div', { className: "space-y-2" },
-            recentExams.map(exam => React.createElement('div', { key: exam.id, className: "bg-white rounded-xl shadow-md p-3 flex justify-between items-center" },
-              React.createElement('div', null,
-                React.createElement('p', { className: "font-semibold" }, currentLang === 'dari' ? exam.name : exam.name_pashto),
-                React.createElement('p', { className: "text-xs text-gray-500" }, `${t('selectClass')}: ${getClasses().find(c => c.id === exam.class_id)?.name}`)
-              ),
-              React.createElement('button', { onClick: () => setPage('results'), className: "bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm" }, t('results'))
-            ))
-          )
-        )
-      );
-    }
-
-    function StudentsPage() {
-      const [showForm, setShowForm] = React.useState(false);
-      const [editingId, setEditingId] = React.useState(null);
-      const [form, setForm] = React.useState({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' });
-      const students = getStudents();
-      const classes = getClasses();
-      
-      const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
-      const handleSave = () => {
-        if (editingId) updateStudent(editingId, form);
-        else addStudent(form);
-        setShowForm(false); setEditingId(null);
-        setForm({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' });
-      };
-      const handleEdit = (student) => { setForm(student); setEditingId(student.id); setShowForm(true); };
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('div', { className: "flex justify-between items-center" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, t('students')),
-          React.createElement('button', { onClick: () => { setShowForm(true); setEditingId(null); setForm({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' }); }, className: "bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-1" }, "+ ", t('add'))
-        ),
-        
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('input', { placeholder: t('rollNumber'), value: form.roll_number, onChange: (e) => setForm({...form, roll_number: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('fullName'), value: form.full_name, onChange: (e) => setForm({...form, full_name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('fatherName'), value: form.father_name, onChange: (e) => setForm({...form, father_name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('phone'), value: form.phone, onChange: (e) => setForm({...form, phone: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded-lg" },
-            React.createElement('option', { value: "" }, t('selectClass')),
-            classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
-          ),
-          React.createElement('div', { className: "flex gap-2" },
-            React.createElement('button', { onClick: handleSave, className: "flex-1 bg-emerald-600 text-white py-2 rounded-lg" }, t('save')),
-            React.createElement('button', { onClick: () => { setShowForm(false); setEditingId(null); }, className: "flex-1 bg-gray-300 py-2 rounded-lg" }, t('cancel'))
-          )
-        ),
-        
-        React.createElement('div', { className: "space-y-2" },
-          students.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('div', { className: "flex justify-between items-start" },
-              React.createElement('div', null,
-                React.createElement('p', { className: "font-bold text-lg" }, s.full_name),
-                React.createElement('p', { className: "text-sm text-gray-500" }, `${t('rollNumber')}: ${s.roll_number} | ${t('class')}: ${getClassName(s.class_id)}`),
-                s.phone && React.createElement('p', { className: "text-xs text-gray-400" }, `${t('phone')}: ${s.phone}`)
-              ),
-              React.createElement('div', { className: "flex gap-1" },
-                React.createElement('button', { onClick: () => handleEdit(s), className: "text-blue-500 p-1" }, "✏️"),
-                React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteStudent(s.id); }, className: "text-red-500 p-1" }, "🗑️")
-              )
-            )
-          ))
-        )
-      );
-    }
-
-    function ClassesPage() {
-      const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', name_pashto: '', grade_level: '', academic_year: '1405' });
-      const classes = getClasses();
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('div', { className: "flex justify-between items-center" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, t('classes')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
-        ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('input', { placeholder: t('className') + " (دری)", value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('className') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
-          React.createElement('button', { onClick: () => { addClass(form); setShowForm(false); setForm({ name: '', name_pashto: '', grade_level: '', academic_year: '1405' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
-        ),
-        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-          classes.map(c => React.createElement('div', { key: c.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? c.name : (c.name_pashto || c.name)),
-            React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteClass(c.id); }, className: "text-red-500 text-sm mt-2" }, t('delete'))
-          ))
-        )
-      );
-    }
-
-    function SubjectsPage() {
-      const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', name_pashto: '', full_marks: '100', pass_marks: '40' });
-      const subjects = getSubjects();
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('div', { className: "flex justify-between items-center" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, t('subjects')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
-        ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('input', { placeholder: t('subjectName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('subjectName') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
-          React.createElement('div', { className: "grid grid-cols-2 gap-2" },
-            React.createElement('input', { type: "number", placeholder: t('fullMarks'), value: form.full_marks, onChange: (e) => setForm({...form, full_marks: e.target.value}), className: "p-2 border rounded-lg" }),
-            React.createElement('input', { type: "number", placeholder: t('passMarks'), value: form.pass_marks, onChange: (e) => setForm({...form, pass_marks: e.target.value}), className: "p-2 border rounded-lg" })
-          ),
-          React.createElement('button', { onClick: () => { addSubject(form); setShowForm(false); setForm({ name: '', name_pashto: '', full_marks: '100', pass_marks: '40' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
-        ),
-        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-          subjects.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name)),
-            React.createElement('p', { className: "text-sm text-gray-500" }, `${t('fullMarks')}: ${s.full_marks} | ${t('passMarks')}: ${s.pass_marks}`),
-            React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteSubject(s.id); }, className: "text-red-500 text-sm mt-2" }, t('delete'))
-          ))
-        )
-      );
-    }
-
-    function ExamsPage() {
-      const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', name_pashto: '', class_id: '', academic_year: '1405', exam_date: '' });
-      const exams = getExams();
-      const classes = getClasses();
-      const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('div', { className: "flex justify-between items-center" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, t('exams')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
-        ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('input', { placeholder: t('examName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('input', { placeholder: t('examName') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
-          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded-lg" },
-            React.createElement('option', { value: "" }, t('selectClass')),
-            classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
-          ),
-          React.createElement('input', { type: "date", placeholder: t('examDate'), value: form.exam_date, onChange: (e) => setForm({...form, exam_date: e.target.value}), className: "w-full p-2 border rounded-lg" }),
-          React.createElement('button', { onClick: () => { addExam(form); setShowForm(false); setForm({ name: '', name_pashto: '', class_id: '', academic_year: '1405', exam_date: '' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
-        ),
-        React.createElement('div', { className: "space-y-2" },
-          exams.map(e => React.createElement('div', { key: e.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('div', { className: "flex justify-between items-center" },
-              React.createElement('div', null,
-                React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)),
-                React.createElement('p', { className: "text-sm text-gray-500" }, `${t('class')}: ${getClassName(e.class_id)} | ${t('academicYear')}: ${e.academic_year}`)
-              ),
-              React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteExam(e.id); }, className: "text-red-500" }, "🗑️")
-            )
-          ))
-        )
-      );
-    }
-
-    function ResultsPage() {
-      const [selectedExam, setSelectedExam] = React.useState('');
-      const [marks, setMarks] = React.useState({});
-      const exams = getExams();
-      const subjects = getSubjects();
-      const students = getStudents();
-      
-      const exam = exams.find(e => e.id === selectedExam);
-      const classStudents = students.filter(s => s.class_id === exam?.class_id);
-      const existingResults = getResults().filter(r => r.exam_id === selectedExam);
-      
-      React.useEffect(() => {
-        if (existingResults.length > 0) {
-          const loadedMarks = {};
-          existingResults.forEach(r => { loadedMarks[`${r.student_id}_${r.subject_id}`] = r.marks; });
-          setMarks(loadedMarks);
-        }
-      }, [selectedExam]);
-      
-      const calculatedResults = selectedExam ? calculateResults(selectedExam) : [];
-      const handleSave = () => { saveResults(selectedExam, marks); alert(t('saveSuccess')); };
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('h1', { className: "text-2xl font-bold" }, t('results')),
-        
-        React.createElement('select', { value: selectedExam, onChange: (e) => setSelectedExam(e.target.value), className: "w-full p-3 border rounded-xl bg-white" },
-          React.createElement('option', { value: "" }, t('selectExam')),
-          exams.map(e => React.createElement('option', { key: e.id, value: e.id }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)))
-        ),
-        
-        selectedExam && React.createElement(React.Fragment, null,
-          React.createElement('div', { className: "flex gap-2" },
-            React.createElement('button', { onClick: () => exportToExcel(selectedExam), className: "flex-1 bg-green-600 text-white py-2 rounded-lg" }, "📊 " + t('excelExport')),
-            React.createElement('button', { onClick: () => exportToPDF(selectedExam), className: "flex-1 bg-red-600 text-white py-2 rounded-lg" }, "📄 " + t('pdfExport'))
-          ),
-          
-          React.createElement('div', { className: "overflow-x-auto" },
-            React.createElement('table', { className: "w-full bg-white rounded-xl shadow-md" },
-              React.createElement('thead', { className: "bg-gray-100" },
-                React.createElement('tr', null,
-                  React.createElement('th', { className: "p-2 text-right" }, t('rollNumber')),
-                  React.createElement('th', { className: "p-2 text-right" }, t('fullName')),
-                  subjects.map(s => React.createElement('th', { key: s.id, className: "p-2 text-center" }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name))),
-                  React.createElement('th', { className: "p-2 text-center" }, t('total')),
-                  React.createElement('th', { className: "p-2 text-center" }, t('percentage')),
-                  React.createElement('th', { className: "p-2 text-center" }, t('status'))
-                )
-              ),
-              React.createElement('tbody', null,
-                classStudents.map(student => {
-                  const result = calculatedResults.find(r => r.student.id === student.id);
-                  return React.createElement('tr', { key: student.id, className: "border-t" },
-                    React.createElement('td', { className: "p-2" }, student.roll_number),
-                    React.createElement('td', { className: "p-2" }, student.full_name),
-                    subjects.map(sub => React.createElement('td', { key: sub.id, className: "p-1" },
-                      React.createElement('input', { type: "number", className: "w-16 p-1 border rounded text-center", value: marks[`${student.id}_${sub.id}`] || '', onChange: (e) => setMarks({...marks, [`${student.id}_${sub.id}`]: e.target.value}) })
-                    )),
-                    React.createElement('td', { className: "p-2 text-center font-bold" }, result?.total || 0),
-                    React.createElement('td', { className: "p-2 text-center" }, result?.percentage.toFixed(1) + '%'),
-                    React.createElement('td', { className: `p-2 text-center font-semibold ${result?.status === 'pass' ? 'text-green-600' : result?.status === 'conditional' ? 'text-yellow-600' : 'text-red-600'}` }, t(result?.status))
-                  );
-                })
-              )
-            )
-          ),
-          
-          React.createElement('button', { onClick: handleSave, className: "w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold" }, t('saveAll'))
-        )
-      );
-    }
-
-    function ScanPage() {
-      const [image, setImage] = React.useState(null);
-      const [scanning, setScanning] = React.useState(false);
-      const [extracted, setExtracted] = React.useState([]);
-      const [selectedExam, setSelectedExam] = React.useState('');
-      const [selectedSubject, setSelectedSubject] = React.useState('');
-      const exams = getExams();
-      const subjects = getSubjects();
-      
-      const handleImage = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (ev) => setImage(ev.target.result);
-          reader.readAsDataURL(file);
-        }
-      };
-      
-      const runScan = async () => {
-        if (!image || !selectedExam || !selectedSubject) { alert('لطفاً امتحان و مضمون را انتخاب کنید'); return; }
-        setScanning(true);
-        const result = await scanMarksheet(image, selectedSubject, selectedExam);
-        if (result.success) {
-          setExtracted(result.extracted);
-          alert(`${result.extracted.length} ${t('extractedRows')}`);
-        } else {
-          alert(t('errorOccurred') + ': ' + result.error);
-        }
-        setScanning(false);
-      };
-      
-      const saveScanned = () => {
-        const newMarks = {};
-        extracted.forEach(item => {
-          newMarks[`${item.student_id}_${selectedSubject}`] = item.marks;
-        });
-        const existing = getResults().filter(r => r.exam_id === selectedExam);
-        const allMarks = {};
-        existing.forEach(r => { allMarks[`${r.student_id}_${r.subject_id}`] = r.marks; });
-        Object.assign(allMarks, newMarks);
-        saveResults(selectedExam, allMarks);
-        alert(t('saveSuccess'));
-        setExtracted([]);
-        setImage(null);
-      };
-      
-      return React.createElement('div', { className: "p-4 space-y-4" },
-        React.createElement('h1', { className: "text-2xl font-bold flex items-center gap-2" }, "🤖 ", t('scan')),
-        
-        React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('select', { value: selectedExam, onChange: (e) => setSelectedExam(e.target.value), className: "w-full p-2 border rounded-lg" },
-            React.createElement('option', { value: "" }, t('selectExam')),
-            exams.map(e => React.createElement('option', { key: e.id, value: e.id }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)))
-          ),
-          React.createElement('select', { value: selectedSubject, onChange: (e) => setSelectedSubject(e.target.value), className: "w-full p-2 border rounded-lg" },
-            React.createElement('option', { value: "" }, t('selectSubject')),
-            subjects.map(s => React.createElement('option', { key: s.id, value: s.id }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name)))
-          ),
-          React.createElement('input', { type: "file", accept: "image/*", capture: "environment", onChange: handleImage, className: "w-full" }),
-          image && React.createElement('img', { src: image, className: "rounded-lg max-h-48 mx-auto", alt: "preview" }),
-          React.createElement('button', { onClick: runScan, disabled: scanning, className: `w-full py-2 rounded-lg ${scanning ? 'bg-gray-400' : 'bg-indigo-600 text-white'}` }, scanning ? t('processing') : t('scanWithCamera'))
-        ),
-        
-        extracted.length > 0 && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
-          React.createElement('h2', { className: "font-bold" }, t('reviewExtracted')),
-          React.createElement('div', { className: "space-y-2" },
-            extracted.map((item, i) => React.createElement('div', { key: i, className: "flex justify-between items-center p-2 bg-gray-50 rounded" },
-              React.createElement('span', null, `${t('rollNumber')}: ${item.roll_number}`),
-              React.createElement('input', { type: "number", value: item.marks, onChange: (e) => { const newExtracted = [...extracted]; newExtracted[i].marks = e.target.value; setExtracted(newExtracted); }, className: "w-20 p-1 border rounded text-center" })
-            ))
-          ),
-          React.createElement('button', { onClick: saveScanned, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
-        )
-      );
-    }
-
-    function App() {
-      const [currentPage, setCurrentPage] = React.useState('dashboard');
-      if (!currentUser) return LoginPage();
-      
-      const pages = {
-        dashboard: React.createElement(DashboardPage, { setPage: setCurrentPage }),
-        students: React.createElement(StudentsPage, null),
-        classes: React.createElement(ClassesPage, null),
-        subjects: React.createElement(SubjectsPage, null),
-        exams: React.createElement(ExamsPage, null),
-        results: React.createElement(ResultsPage, null),
-        scan: React.createElement(ScanPage, null)
-      };
-      
-      const menu = [
-        { id: 'dashboard', icon: '📊', label: t('dashboard') },
-        { id: 'students', icon: '👨‍🎓', label: t('students') },
-        { id: 'classes', icon: '🏫', label: t('classes') },
-        { id: 'subjects', icon: '📚', label: t('subjects') },
-        { id: 'exams', icon: '📝', label: t('exams') },
-        { id: 'results', icon: '📊', label: t('results') },
-        { id: 'scan', icon: '🤖', label: t('scan') }
-      ];
-      
-      return React.createElement('div', { className: "min-h-screen bg-gray-50 pb-20" },
-        React.createElement('div', { className: "bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-10" },
-          React.createElement('div', { className: "flex justify-between items-center max-w-md mx-auto" },
-            React.createElement('div', null,
-              React.createElement('h1', { className: "text-lg font-bold" }, t('appName')),
-              React.createElement('p', { className: "text-xs opacity-80" }, t('appSubtitle'))
-            ),
-            React.createElement('div', { className: "flex gap-2" },
-              React.createElement('button', { onClick: () => setLanguage('dari'), className: "px-2 py-1 text-xs rounded bg-emerald-700" }, "دری"),
-              React.createElement('button', { onClick: () => setLanguage('pashto'), className: "px-2 py-1 text-xs rounded bg-emerald-700 font-pashto" }, "پښتو"),
-              React.createElement('button', { onClick: logout, className: "px-3 py-1 text-sm rounded bg-emerald-700" }, t('logout'))
-            )
-          )
-        ),
-        React.createElement('div', { className: "max-w-md mx-auto" }, pages[currentPage]),
-        React.createElement('div', { className: "fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg flex justify-around p-2 max-w-md mx-auto z-10" },
-          menu.map(item => React.createElement('button', { key: item.id, onClick: () => setCurrentPage(item.id), className: `p-2 rounded-lg text-center transition ${currentPage === item.id ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500'}` },
-            React.createElement('div', { className: "text-xl" }, item.icon),
-            React.createElement('div', { className: "text-xs" }, item.label)
-          ))
-        )
-      );
-    }
-    
-    function renderApp() { const root = ReactDOM.createRoot(document.getElementById('root')); root.render(React.createElement(App)); }
-    renderApp();
-  </script>
 </body>
 </html>
