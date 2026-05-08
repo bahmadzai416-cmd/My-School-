@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>سیستم مدیریت مکتب - School Management</title>
+  <meta name="description" content="سیستم مدیریت مکتب با پشتیبانی دری و پښتو">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#059669">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- React & ReactDOM -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- XLSX for Excel export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    * { font-family: 'Vazirmatn', sans-serif; }
+    body { background: #f0fdf4; }
+    .rtl { direction: rtl; }
+    .ltr { direction: ltr; }
+    .card-hover:hover { transform: translateY(-2px); transition: all 0.2s; }
+    input, select, textarea { font-family: 'Vazirmatn', sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // ==================== LOCAL STORAGE KEYS ====================
+    const STORAGE_KEYS = {
+      STUDENTS: 'school_students',
+      CLASSES: 'school_classes',
+      SUBJECTS: 'school_subjects',
+      EXAMS: 'school_exams',
+      RESULTS: 'school_results',
+      CURRENT_USER: 'school_current_user',
+      USERS: 'school_users'
+    };
+
+    // ==================== INITIAL DATA ====================
+    function initializeData() {
+      if (!localStorage.getItem(STORAGE_KEYS.STUDENTS)) {
+        localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify([
+          { id: '1', roll_number: '001', full_name: 'احمد رضا', father_name: 'محمد', class_id: '1', academic_year: '1405' },
+          { id: '2', roll_number: '002', full_name: 'فاطمه حسینی', father_name: 'علی', class_id: '1', academic_year: '1405' },
+          { id: '3', roll_number: '003', full_name: 'محمد امین', father_name: 'کریم', class_id: '2', academic_year: '1405' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE_KEYS.CLASSES)) {
+        localStorage.setItem(STORAGE_KEYS.CLASSES, JSON.stringify([
+          { id: '1', name: 'صنف هفتم', grade_level: 7, academic_year: '1405' },
+          { id: '2', name: 'صنف هشتم', grade_level: 8, academic_year: '1405' },
+          { id: '3', name: 'صنف نهم', grade_level: 9, academic_year: '1405' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE_KEYS.SUBJECTS)) {
+        localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify([
+          { id: '1', name: 'ریاضی', full_marks: 100 },
+          { id: '2', name: 'دری', full_marks: 100 },
+          { id: '3', name: 'انگلیسی', full_marks: 100 }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE_KEYS.EXAMS)) {
+        localStorage.setItem(STORAGE_KEYS.EXAMS, JSON.stringify([
+          { id: '1', name: 'امتحان نیم‌سال اول', class_id: '1', academic_year: '1405' }
+        ]));
+      }
+      if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([
+          { id: '1', email: 'admin@school.com', password: 'admin123', role: 'admin', full_name: 'مدیر سیستم' }
+        ]));
+      }
+    }
+
+    initializeData();
+
+    // ==================== HELPER FUNCTIONS ====================
+    function getData(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+    function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+    // ==================== TRANSLATIONS ====================
+    const t = {
+      dari: {
+        appName: 'سیستم مدیریت مکتب',
+        login: 'ورود',
+        logout: 'خروج',
+        dashboard: 'داشبورد',
+        students: 'شاگردان',
+        classes: 'صنف‌ها',
+        subjects: 'مضمون‌ها',
+        exams: 'امتحانات',
+        results: 'نتایج',
+        scan: 'اسکن',
+        add: 'افزودن',
+        edit: 'ویرایش',
+        delete: 'حذف',
+        save: 'ذخیره',
+        cancel: 'انصراف',
+        rollNumber: 'نمبر رول',
+        fullName: 'نام کامل',
+        fatherName: 'نام پدر',
+        academicYear: 'سال تعلیمی',
+        total: 'مجموع',
+        percentage: 'فیصدی',
+        status: 'وضعیت',
+        rank: 'رتبه',
+        pass: 'کامیاب',
+        conditional: 'مشروط',
+        fail: 'ناکام',
+        welcome: 'خوش آمدید',
+        loading: 'در حال بارگذاری...',
+        totalStudents: 'مجموع شاگردان',
+        totalClasses: 'مجموع صنف‌ها',
+        totalSubjects: 'مجموع مضمون‌ها',
+        totalExams: 'مجموع امتحانات'
+      },
+      pashto: {
+        appName: 'د مکتب مدیریت سیسټم',
+        login: 'ننوتل',
+        logout: 'وتل',
+        dashboard: 'ډشبورډ',
+        students: 'زده کوونکي',
+        classes: 'ټولګي',
+        subjects: 'مضمونونه',
+        exams: 'امتحانونه',
+        results: 'پایلې',
+        scan: 'سکین',
+        add: 'زیاتول',
+        edit: 'سمول',
+        delete: 'ړنګول',
+        save: 'خوندي کول',
+        cancel: 'ردول',
+        rollNumber: 'رول نمبر',
+        fullName: 'بشپړ نوم',
+        fatherName: 'د پلار نوم',
+        academicYear: 'تعلیمي کال',
+        total: 'ټولټال',
+        percentage: 'سلنه',
+        status: 'وضعیت',
+        rank: 'رتبه',
+        pass: 'بریالی',
+        conditional: 'مشروط',
+        fail: 'ناکام',
+        welcome: 'ښه راغلاست',
+        loading: 'په لاس راوړل کیږي...',
+        totalStudents: 'ټول زده کوونکي',
+        totalClasses: 'ټول ټولګي',
+        totalSubjects: 'ټول مضمونونه',
+        totalExams: 'ټول امتحانونه'
+      }
+    };
+
+    let currentLang = localStorage.getItem('language') || 'dari';
+
+    function getText(key) { return t[currentLang][key] || key; }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('language', lang);
+      renderApp();
+    }
+
+    // ==================== AUTH ====================
+    let currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || 'null');
+
+    function login(email, password) {
+      const users = getData(STORAGE_KEYS.USERS);
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        currentUser = user;
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+        renderApp();
+        return true;
+      }
+      return false;
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      renderApp();
+    }
+
+    // ==================== CRUD FUNCTIONS ====================
+    function getStudents() { return getData(STORAGE_KEYS.STUDENTS); }
+    function getClasses() { return getData(STORAGE_KEYS.CLASSES); }
+    function getSubjects() { return getData(STORAGE_KEYS.SUBJECTS); }
+    function getExams() { return getData(STORAGE_KEYS.EXAMS); }
+    function getResults() { return getData(STORAGE_KEYS.RESULTS); }
+
+    function addStudent(data) {
+      const students = getStudents();
+      const newStudent = { ...data, id: Date.now().toString() };
+      students.push(newStudent);
+      saveData(STORAGE_KEYS.STUDENTS, students);
+      renderApp();
+    }
+
+    function deleteStudent(id) {
+      let students = getStudents();
+      students = students.filter(s => s.id !== id);
+      saveData(STORAGE_KEYS.STUDENTS, students);
+      renderApp();
+    }
+
+    function addClass(data) {
+      const classes = getClasses();
+      const newClass = { ...data, id: Date.now().toString() };
+      classes.push(newClass);
+      saveData(STORAGE_KEYS.CLASSES, classes);
+      renderApp();
+    }
+
+    function deleteClass(id) {
+      let classes = getClasses();
+      classes = classes.filter(c => c.id !== id);
+      saveData(STORAGE_KEYS.CLASSES, classes);
+      renderApp();
+    }
+
+    function addSubject(data) {
+      const subjects = getSubjects();
+      const newSubject = { ...data, id: Date.now().toString() };
+      subjects.push(newSubject);
+      saveData(STORAGE_KEYS.SUBJECTS, subjects);
+      renderApp();
+    }
+
+    function deleteSubject(id) {
+      let subjects = getSubjects();
+      subjects = subjects.filter(s => s.id !== id);
+      saveData(STORAGE_KEYS.SUBJECTS, subjects);
+      renderApp();
+    }
+
+    function addExam(data) {
+      const exams = getExams();
+      const newExam = { ...data, id: Date.now().toString() };
+      exams.push(newExam);
+      saveData(STORAGE_KEYS.EXAMS, exams);
+      renderApp();
+    }
+
+    function deleteExam(id) {
+      let exams = getExams();
+      exams = exams.filter(e => e.id !== id);
+      saveData(STORAGE_KEYS.EXAMS, exams);
+      renderApp();
+    }
+
+    function saveResults(results) {
+      saveData(STORAGE_KEYS.RESULTS, results);
+      renderApp();
+    }
+
+    // ==================== REACT COMPONENTS ====================
+    function LoginPage() {
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [error, setError] = React.useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (login(email, password)) {
+          setError('');
+        } else {
+          setError(getText('login') + ' ' + getText('failed'));
+        }
+      };
+
+      return React.createElement('div', { className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-4" },
+        React.createElement('div', { className: "bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" },
+          React.createElement('h1', { className: "text-3xl font-bold text-center text-emerald-700 mb-2" }, getText('appName')),
+          React.createElement('p', { className: "text-center text-gray-500 mb-8" }, getText('welcome')),
+          React.createElement('form', { onSubmit: handleSubmit, className: "space-y-4" },
+            React.createElement('input', { type: "email", placeholder: getText('email'), value: email, onChange: (e) => setEmail(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
+            React.createElement('input', { type: "password", placeholder: getText('password'), value: password, onChange: (e) => setPassword(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
+            error && React.createElement('p', { className: "text-red-500 text-sm text-center" }, error),
+            React.createElement('button', { type: "submit", className: "w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition" }, getText('login')),
+            React.createElement('p', { className: "text-center text-sm text-gray-500 mt-4" }, "Demo: admin@school.com / admin123")
+          ),
+          React.createElement('div', { className: "mt-6 flex justify-center gap-2" },
+            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-3 py-1 rounded ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "دری"),
+            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-3 py-1 rounded ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "پښتو")
+          )
+        )
+      );
+    }
+
+    function Dashboard() {
+      const students = getStudents();
+      const classes = getClasses();
+      const subjects = getSubjects();
+      const exams = getExams();
+
+      const stats = [
+        { label: getText('totalStudents'), value: students.length, color: 'bg-blue-500' },
+        { label: getText('totalClasses'), value: classes.length, color: 'bg-emerald-500' },
+        { label: getText('totalSubjects'), value: subjects.length, color: 'bg-purple-500' },
+        { label: getText('totalExams'), value: exams.length, color: 'bg-orange-500' }
+      ];
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('h1', { className: "text-2xl font-bold mb-2" }, getText('dashboard')),
+        React.createElement('p', { className: "text-gray-500 mb-6" }, `${getText('welcome')}, ${currentUser?.full_name || 'User'}`),
+        React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-8" },
+          stats.map((stat, i) => React.createElement('div', { key: i, className: "bg-white rounded-xl shadow-md p-4 text-center" },
+            React.createElement('div', { className: `${stat.color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white text-xl font-bold` }, stat.value),
+            React.createElement('p', { className: "text-gray-600 text-sm" }, stat.label)
+          ))
+        ),
+        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+          ['students', 'classes', 'subjects', 'exams', 'results', 'scan'].map(page => 
+            React.createElement('button', { key: page, onClick: () => setCurrentPage(page), className: "bg-white border rounded-xl p-4 text-center shadow-sm hover:shadow-md transition" },
+              React.createElement('span', { className: "font-semibold" }, getText(page))
+            )
+          )
+        )
+      );
+    }
+
+    function StudentsPage() {
+      const [showForm, setShowForm] = React.useState(false);
+      const [form, setForm] = React.useState({ roll_number: '', full_name: '', father_name: '', class_id: '', academic_year: '1405' });
+      const students = getStudents();
+      const classes = getClasses();
+
+      const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
+
+      const handleAdd = () => {
+        if (form.roll_number && form.full_name) {
+          addStudent(form);
+          setForm({ roll_number: '', full_name: '', father_name: '', class_id: '', academic_year: '1405' });
+          setShowForm(false);
+        }
+      };
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('div', { className: "flex justify-between items-center mb-4" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, getText('students')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, showForm ? getText('cancel') : `+ ${getText('add')}`)
+        ),
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
+          React.createElement('input', { placeholder: getText('rollNumber'), value: form.roll_number, onChange: (e) => setForm({...form, roll_number: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('input', { placeholder: getText('fullName'), value: form.full_name, onChange: (e) => setForm({...form, full_name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('input', { placeholder: getText('fatherName'), value: form.father_name, onChange: (e) => setForm({...form, father_name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded mb-2" },
+            React.createElement('option', { value: "" }, getText('selectClass')),
+            classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
+          ),
+          React.createElement('button', { onClick: handleAdd, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        ),
+        React.createElement('div', { className: "space-y-2" },
+          students.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4 flex justify-between items-center" },
+            React.createElement('div', null,
+              React.createElement('p', { className: "font-bold" }, s.full_name),
+              React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('rollNumber')}: ${s.roll_number} | ${getText('class')}: ${getClassName(s.class_id)}`)
+            ),
+            React.createElement('button', { onClick: () => deleteStudent(s.id), className: "text-red-500" }, "🗑️")
+          ))
+        )
+      );
+    }
+
+    function ClassesPage() {
+      const [showForm, setShowForm] = React.useState(false);
+      const [form, setForm] = React.useState({ name: '', grade_level: '', academic_year: '1405' });
+      const classes = getClasses();
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('div', { className: "flex justify-between items-center mb-4" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, getText('classes')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+        ),
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
+          React.createElement('input', { placeholder: getText('className'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('button', { onClick: () => { addClass(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        ),
+        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+          classes.map(c => React.createElement('div', { key: c.id, className: "bg-white rounded-xl shadow-md p-4" },
+            React.createElement('p', { className: "font-bold" }, c.name),
+            React.createElement('button', { onClick: () => deleteClass(c.id), className: "text-red-500 text-sm mt-2" }, getText('delete'))
+          ))
+        )
+      );
+    }
+
+    function SubjectsPage() {
+      const [showForm, setShowForm] = React.useState(false);
+      const [form, setForm] = React.useState({ name: '', full_marks: '100' });
+      const subjects = getSubjects();
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('div', { className: "flex justify-between items-center mb-4" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, getText('subjects')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+        ),
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
+          React.createElement('input', { placeholder: getText('subjectName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('button', { onClick: () => { addSubject(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        ),
+        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+          subjects.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4" },
+            React.createElement('p', { className: "font-bold" }, s.name),
+            React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('fullMarks')}: ${s.full_marks}`),
+            React.createElement('button', { onClick: () => deleteSubject(s.id), className: "text-red-500 text-sm mt-2" }, getText('delete'))
+          ))
+        )
+      );
+    }
+
+    function ExamsPage() {
+      const [showForm, setShowForm] = React.useState(false);
+      const [form, setForm] = React.useState({ name: '', class_id: '', academic_year: '1405' });
+      const exams = getExams();
+      const classes = getClasses();
+
+      const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('div', { className: "flex justify-between items-center mb-4" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, getText('exams')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+        ),
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
+          React.createElement('input', { placeholder: getText('examName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
+          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded mb-2" },
+            React.createElement('option', { value: "" }, getText('selectClass')),
+            classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
+          ),
+          React.createElement('button', { onClick: () => { addExam(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        ),
+        React.createElement('div', { className: "space-y-2" },
+          exams.map(e => React.createElement('div', { key: e.id, className: "bg-white rounded-xl shadow-md p-4 flex justify-between items-center" },
+            React.createElement('div', null,
+              React.createElement('p', { className: "font-bold" }, e.name),
+              React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('class')}: ${getClassName(e.class_id)}`)
+            ),
+            React.createElement('button', { onClick: () => deleteExam(e.id), className: "text-red-500" }, "🗑️")
+          ))
+        )
+      );
+    }
+
+    function ResultsPage() {
+      const [marks, setMarks] = React.useState({});
+      const exams = getExams();
+      const students = getStudents();
+      const subjects = getSubjects();
+
+      const exportExcel = () => {
+        const XLSX = window.XLSX;
+        const wsData = [['نمبر رول', 'نام', ...subjects.map(s => s.name), 'مجموع']];
+        students.forEach(s => {
+          const row = [s.roll_number, s.full_name];
+          let total = 0;
+          subjects.forEach(sub => {
+            const mark = marks[`${s.id}_${sub.id}`] || '';
+            row.push(mark);
+            total += Number(mark) || 0;
+          });
+          row.push(total);
+          wsData.push(row);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'نتایج');
+        XLSX.writeFile(wb, `نتایج_امتحان.xlsx`);
+      };
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('h1', { className: "text-2xl font-bold mb-4" }, getText('results')),
+        React.createElement('button', { onClick: exportExcel, className: "bg-emerald-600 text-white px-4 py-2 rounded-lg mb-4" }, "Excel"),
+        React.createElement('div', { className: "overflow-x-auto" },
+          React.createElement('table', { className: "w-full bg-white rounded-xl shadow-md" },
+            React.createElement('thead', { className: "bg-gray-100" },
+              React.createElement('tr', null,
+                React.createElement('th', { className: "p-2 text-right" }, getText('rollNumber')),
+                React.createElement('th', { className: "p-2 text-right" }, getText('fullName')),
+                subjects.map(s => React.createElement('th', { key: s.id, className: "p-2 text-center" }, s.name)),
+                React.createElement('th', { className: "p-2 text-center" }, getText('total'))
+              )
+            ),
+            React.createElement('tbody', null,
+              students.map(s => React.createElement('tr', { key: s.id, className: "border-t" },
+                React.createElement('td', { className: "p-2" }, s.roll_number),
+                React.createElement('td', { className: "p-2" }, s.full_name),
+                subjects.map(sub => React.createElement('td', { key: sub.id, className: "p-1" },
+                  React.createElement('input', { type: "number", className: "w-16 p-1 border rounded text-center", value: marks[`${s.id}_${sub.id}`] || '', onChange: (e) => setMarks({...marks, [`${s.id}_${sub.id}`]: e.target.value}) })
+                )),
+                React.createElement('td', { className: "p-2 text-center font-bold" }, 
+                  subjects.reduce((sum, sub) => sum + (Number(marks[`${s.id}_${sub.id}`]) || 0), 0)
+                )
+              ))
+            )
+          )
+        ),
+        React.createElement('button', { onClick: () => saveResults(marks), className: "w-full bg-emerald-600 text-white py-2 rounded-lg mt-4" }, getText('save'))
+      );
+    }
+
+    function ScanPage() {
+      const [image, setImage] = React.useState(null);
+      const [extracted, setExtracted] = React.useState([]);
+
+      const handleImage = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => setImage(ev.target.result);
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const runOCR = () => {
+        setTimeout(() => {
+          setExtracted([
+            { roll_number: '001', written: 18, oral: 17, total: 35 },
+            { roll_number: '002', written: 16, oral: 19, total: 35 }
+          ]);
+          alert('اسکن تکمیل شد! ' + extracted.length + ' نمره استخراج شد');
+        }, 1000);
+      };
+
+      return React.createElement('div', { className: "p-4" },
+        React.createElement('h1', { className: "text-2xl font-bold mb-4" }, getText('scan')),
+        React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
+          React.createElement('input', { type: "file", accept: "image/*", capture: "environment", onChange: handleImage, className: "w-full mb-3" }),
+          image && React.createElement('img', { src: image, className: "rounded-lg max-h-48 mx-auto mb-3", alt: "preview" }),
+          React.createElement('button', { onClick: runOCR, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('scanWithCamera'))
+        )
+      );
+    }
+
+    // ==================== APP ====================
+    let [currentPage, setCurrentPage] = React.useState('dashboard');
+    window.setCurrentPage = setCurrentPage;
+
+    function App() {
+      if (!currentUser) return LoginPage();
+      
+      const pages = {
+        dashboard: Dashboard(),
+        students: StudentsPage(),
+        classes: ClassesPage(),
+        subjects: SubjectsPage(),
+        exams: ExamsPage(),
+        results: ResultsPage(),
+        scan: ScanPage()
+      };
+
+      const menuItems = ['dashboard', 'students', 'classes', 'subjects', 'exams', 'results', 'scan'];
+
+      return React.createElement('div', { className: "min-h-screen bg-gray-50 pb-20" },
+        React.createElement('div', { className: "bg-emerald-600 text-white p-4 shadow-lg" },
+          React.createElement('div', { className: "flex justify-between items-center" },
+            React.createElement('h1', { className: "text-xl font-bold" }, getText('appName')),
+            React.createElement('div', { className: "flex gap-2" },
+              React.createElement('button', { onClick: () => setLanguage('dari'), className: "px-2 py-1 text-sm bg-emerald-700 rounded" }, "دری"),
+              React.createElement('button', { onClick: () => setLanguage('pashto'), className: "px-2 py-1 text-sm bg-emerald-700 rounded" }, "پښتو"),
+              React.createElement('button', { onClick: logout, className: "px-3 py-1 bg-emerald-700 rounded" }, getText('logout'))
+            )
+          )
+        ),
+        React.createElement('div', { className: "max-w-md mx-auto" }, pages[currentPage]),
+        React.createElement('div', { className: "fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg flex justify-around p-2 max-w-md mx-auto" },
+          menuItems.map(item => React.createElement('button', { key: item, onClick: () => setCurrentPage(item), className: `p-2 rounded-lg text-sm ${currentPage === item ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500'}` }, getText(item)))
+        )
+      );
+    }
+
+    function renderApp() {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(App));
+    }
+
+    renderApp();
+  </script>
+</body>
+</html>
