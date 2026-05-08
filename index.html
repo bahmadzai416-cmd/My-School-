@@ -1,471 +1,307 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#1E3A8A">
+    <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.json">
-    <title>My School Search | AI School Management</title>
-    <!-- CDN Libraries -->
+    <title>My School Search | کامل‌ترین سیستم مدیریت مدرسه با AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            min-height: 100vh;
-            color: #f1f5f9;
-            direction: rtl;
-        }
-
-        /* Glassmorphism & Animations */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border-radius: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        button, .btn {
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 1rem;
-        }
-
-        button:hover {
-            opacity: 0.9;
-            transform: scale(0.98);
-        }
-
-        input, select, textarea {
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid #475569;
-            border-radius: 24px;
-            padding: 12px 18px;
-            color: white;
-            width: 100%;
-            margin: 8px 0;
-            outline: none;
-        }
-
-        .sidebar {
-            position: fixed;
-            right: -280px;
-            top: 0;
-            width: 280px;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 1000;
-            transition: 0.3s;
-            padding: 20px;
-            border-left: 1px solid #334155;
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .mobile-header {
-            display: flex;
-            justify-content: space-between;
-            padding: 16px;
-            background: rgba(0,0,0,0.3);
-        }
-
-        .dashboard-container {
-            padding: 20px;
-            max-width: 1400px;
-            margin: auto;
-        }
-
-        .grid-2, .grid-3 {
-            display: grid;
-            gap: 20px;
-        }
-
-        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
-
-        @media (max-width: 600px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-        }
-
-        .attendance-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-        }
-
-        .theme-toggle {
-            background: #334155;
-            border-radius: 50px;
-            padding: 8px 15px;
-        }
-
-        .notification-toast {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #1e293b;
-            border-right: 5px solid #3b82f6;
-            padding: 12px 20px;
-            border-radius: 16px;
-            z-index: 1100;
-            animation: fadeInUp 0.3s;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Poppins',Tahoma,sans-serif}
+        body{background:linear-gradient(135deg,#0a0f1c 0%,#0f172a 100%);min-height:100vh;color:#e2e8f0;direction:rtl}
+        .glass-card{background:rgba(15,25,45,0.85);backdrop-filter:blur(16px);border-radius:2rem;border:1px solid rgba(59,130,246,0.5);box-shadow:0 20px 35px -12px rgba(0,0,0,0.5);transition:all 0.25s ease;padding:1.5rem;margin-bottom:1rem}
+        .glass-card:hover{border-color:#3b82f6;transform:translateY(-3px);background:rgba(25,40,65,0.92)}
+        button,.btn-primary{background:linear-gradient(95deg,#2563eb,#7c3aed);border:none;padding:0.7rem 1.3rem;border-radius:3rem;font-weight:600;color:white;cursor:pointer;transition:0.2s;margin:0.3rem;font-size:0.85rem}
+        button:hover{transform:scale(0.96);opacity:0.9}
+        .btn-danger{background:linear-gradient(95deg,#dc2626,#b91c1c)}
+        .btn-success{background:linear-gradient(95deg,#10b981,#059669)}
+        .btn-warning{background:linear-gradient(95deg,#f59e0b,#d97706)}
+        .btn-info{background:linear-gradient(95deg,#06b6d4,#0891b2)}
+        input,select,textarea{background:#1e293b;border:1px solid #334155;border-radius:2rem;padding:0.7rem 1.2rem;color:#f1f5f9;width:100%;margin:0.5rem 0;outline:none}
+        input:focus,select:focus{border-color:#3b82f6;box-shadow:0 0 10px #3b82f6}
+        .dashboard-container{padding:1rem;max-width:1600px;margin:0 auto}
+        .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1.2rem}
+        .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1.2rem}
+        .grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1rem}
+        @media(max-width:768px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+        .sidebar{position:fixed;right:-350px;top:0;width:320px;height:100%;background:rgba(5,10,25,0.98);backdrop-filter:blur(20px);z-index:1000;transition:0.3s;padding:1.5rem;border-left:1px solid #3b82f6;overflow-y:auto}
+        .sidebar.open{right:0}
+        .toast{position:fixed;bottom:25px;left:20px;background:#0f172ae6;border-right:5px solid #3b82f6;padding:0.7rem 1.2rem;border-radius:2rem;z-index:9999;animation:fadeUp 0.3s}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        table{width:100%;border-collapse:collapse;color:#cbd5e1;font-size:0.85rem}
+        th,td{padding:0.6rem;border-bottom:1px solid #334155;text-align:center}
+        .tt-input{background:#0f172a;border:1px solid #3b82f6;border-radius:0.6rem;padding:0.4rem;text-align:center;color:white;width:100%}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);z-index:2000;display:flex;align-items:center;justify-content:center}
+        .modal-content{max-width:600px;width:90%;max-height:85vh;overflow-y:auto;background:#0f172a;border-radius:2rem;padding:1.5rem;border:1px solid #3b82f6}
+        .install-btn{position:fixed;bottom:20px;right:20px;z-index:999;background:#3b82f6;border-radius:50px;padding:10px 18px;cursor:pointer;font-weight:bold;font-size:0.8rem}
+        .spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(59,130,246,0.3);border-top:2px solid #3b82f6;border-radius:50%;animation:spin 0.8s linear infinite}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        body.dark{background:linear-gradient(135deg,#020617,#0f172a)}
+        .attendance-badge{padding:0.2rem 0.6rem;border-radius:1rem;font-size:0.7rem}
+        h2{font-size:1.3rem;margin-bottom:0.5rem}
+        h3{font-size:1rem;margin-bottom:0.8rem}
     </style>
 </head>
 <body>
-<div id="appRoot"></div>
+<div id="app"></div>
 
 <script>
-    // ---------- Mock Database (localStorage) ----------
+    // ================================================ دیتابیس کامل ================================================
     let db = {
         users: JSON.parse(localStorage.getItem('mss_users')) || [],
         attendance: JSON.parse(localStorage.getItem('mss_attendance')) || [],
         marks: JSON.parse(localStorage.getItem('mss_marks')) || [],
         exams: JSON.parse(localStorage.getItem('mss_exams')) || [],
         fees: JSON.parse(localStorage.getItem('mss_fees')) || [],
+        salaries: JSON.parse(localStorage.getItem('mss_salaries')) || [],
+        expenses: JSON.parse(localStorage.getItem('mss_expenses')) || [],
         timetable: JSON.parse(localStorage.getItem('mss_timetable')) || {}
     };
-
-    function saveDB() {
+    function saveAll() {
         localStorage.setItem('mss_users', JSON.stringify(db.users));
         localStorage.setItem('mss_attendance', JSON.stringify(db.attendance));
         localStorage.setItem('mss_marks', JSON.stringify(db.marks));
         localStorage.setItem('mss_exams', JSON.stringify(db.exams));
         localStorage.setItem('mss_fees', JSON.stringify(db.fees));
+        localStorage.setItem('mss_salaries', JSON.stringify(db.salaries));
+        localStorage.setItem('mss_expenses', JSON.stringify(db.expenses));
         localStorage.setItem('mss_timetable', JSON.stringify(db.timetable));
     }
-
-    let currentUser = null;
-    let currentRole = null;
-
-    // Helper: showNotification
-    function notify(msg, type="info") {
-        const toast = document.createElement('div');
-        toast.className = 'notification-toast glass-card';
-        toast.innerHTML = `<i class="fas fa-bell"></i> ${msg}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+    // ایجاد کاربران نمونه برای تست
+    if(db.users.length === 0) {
+        db.users = [
+            {id:1, firstName:"مدیر", lastName:"کل", phone:"09123456789", schoolName:"مدرسه مرکزی", email:"admin@school.com", password:"123", role:"admin", profilePhoto:"", extra:{}},
+            {id:2, firstName:"معلم", lastName:"نمونه", phone:"09123456788", schoolName:"مدرسه مرکزی", email:"teacher@school.com", password:"123", role:"teacher", profilePhoto:"", extra:{subjects:["ریاضی","فیزیک"], classes:["10-الف","11-ب"], teachingTimes:"شنبه و دوشنبه 8-12"}},
+            {id:3, firstName:"دانش", lastName:"آموز", phone:"09123456787", schoolName:"مدرسه مرکزی", email:"student@school.com", password:"123", role:"student", profilePhoto:"", extra:{}}
+        ];
+        saveAll();
     }
 
-    // ---------- AI simulation functions ----------
-    function aiChatbotSim(query) {
-        return `AI 🤖: "${query}" — Based on analytics, student performance improves by 23% with consistent attendance.`;
-    }
-    function aiAttendancePrediction(classId) {
-        return Math.floor(Math.random() * 30) + 65; // 65-95% predicted
-    }
-    function aiStudentAnalysis(studentId) {
-        return { focus: "Mathematics", improvement: "High potential in Science", risk: "Low" };
-    }
-    function aiOCRSimulate(file) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({ students: ["Ali Ahmad", "Fatima Z"], marks: [85,92], roll: [101,102] });
-            }, 1500);
-        });
+    let currentUser = null, currentRole = null;
+    let deferredPrompt = null;
+
+    function notify(msg) { let t=document.createElement('div'); t.className='toast'; t.innerHTML=`<i class="fas fa-bell"></i> ${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+
+    // ================================================ هوش مصنوعی ================================================
+    const aiChat = (q) => `🤖 پاسخ AI: "${q}" — پیشنهاد هوشمند: استفاده از روش تدریس تعاملی باعث افزایش ۳۵٪ یادگیری می‌شود.`;
+    const aiPredict = (c,s) => `📊 پیش‌بینی AI برای کلاس ${c} درس ${s}: ${Math.floor(Math.random()*30)+65}% حضور مؤثر در ترم جاری.`;
+    const aiAnalyze = (n) => ({ strength:"ریاضیات و حل مسئله", weakness:"ادبیات فارسی", recommend:"تمرین روزانه انشا نویسی", predictGrade:"17.8" });
+    const aiOCRSimulate = () => new Promise(r=>setTimeout(()=>r({students:["علی محمدی","سارا کریمی","رضا احمدی"], marks:[18.5,17,19], attendance:["حاضر","حاضر","غایب"]}),1500));
+
+    // ================================================ سیستم احراز هویت ================================================
+    function renderAuth() {
+        document.getElementById('app').innerHTML = `
+        <div class="dashboard-container"><div class="glass-card" style="max-width:700px;margin:auto;text-align:center">
+            <h1><i class="fas fa-school"></i> My School Search</h1>
+            <p style="margin:10px">سیستم مدیریت یکپارچه مدرسه با هوش مصنوعی | PWA | آفلاین</p>
+            <div style="display:flex;gap:12px;justify-content:center;margin:20px 0"><button id="loginBtn" class="btn-primary">🔐 ورود</button><button id="signupBtn" class="btn-success">📝 ثبت‌نام</button></div>
+            <div id="authPanel"></div>
+        </div></div>`;
+        document.getElementById('loginBtn').onclick = () => showLogin();
+        document.getElementById('signupBtn').onclick = () => showSignup();
+        showLogin();
     }
 
-    // ---------- Render Main based on Auth ----------
-    function render() {
-        if (!currentUser) {
-            renderAuthScreen();
-        } else {
-            switch(currentRole) {
-                case 'admin': renderAdminDashboard(); break;
-                case 'principal': renderPrincipalDashboard(); break;
-                case 'finance_manager': renderFinanceDashboard(); break;
-                case 'head_teacher': renderHeadTeacherDashboard(); break;
-                case 'teacher': renderTeacherDashboard(); break;
-                case 'student': renderStudentDashboard(); break;
-                case 'parent': renderParentDashboard(); break;
-                default: renderAuthScreen();
-            }
+    function showLogin() {
+        document.getElementById('authPanel').innerHTML = `
+            <select id="loginRole"><option value="admin">مدیرکل</option><option value="principal">مدیر مکتب</option><option value="finance_manager">مدیر مالی</option><option value="head_teacher">معاون آموزشی</option><option value="teacher">معلم</option><option value="student">دانش‌آموز</option><option value="parent">والدین</option></select>
+            <input id="loginEmail" placeholder="ایمیل" value="admin@school.com"><input id="loginPass" type="password" placeholder="رمز عبور" value="123">
+            <button id="doLogin" class="btn-primary">ورود به سیستم</button>`;
+        document.getElementById('doLogin').onclick = () => {
+            let role = document.getElementById('loginRole').value;
+            let email = document.getElementById('loginEmail').value;
+            let pwd = document.getElementById('loginPass').value;
+            let user = db.users.find(u=>u.email===email && u.password===pwd && u.role===role);
+            if(user){ currentUser=user; currentRole=role; notify(`خوش آمدید ${user.firstName} ${user.lastName}`); renderDashboard(); }
+            else alert("❌ ایمیل یا رمز عبور اشتباه است!");
+        };
+    }
+
+    function showSignup() {
+        document.getElementById('authPanel').innerHTML = `
+            <select id="signRole"><option value="teacher">معلم</option><option value="student">دانش‌آموز</option><option value="parent">والدین</option><option value="principal">مدیر مکتب</option><option value="finance_manager">مدیر مالی</option><option value="head_teacher">معاون آموزشی</option><option value="admin">مدیرکل</option></select>
+            <input id="fName" placeholder="نام"><input id="lName" placeholder="نام خانوادگی"><input id="phone" placeholder="تلفن"><input id="email" placeholder="ایمیل"><input id="school" placeholder="نام مکتب"><input id="pass" type="password" placeholder="رمز"><input id="confirm" type="password" placeholder="تایید رمز">
+            <div id="extraFields"></div><input type="file" id="photo" accept="image/*"><button id="doSignup" class="btn-success">✅ ثبت‌نام نهایی</button>`;
+        const roleSel = document.getElementById('signRole');
+        roleSel.onchange = () => {
+            let extra = document.getElementById('extraFields');
+            if(roleSel.value === 'teacher') extra.innerHTML = `<input id="subj" placeholder="موضوعات (ریاضی,فیزیک,شیمی)"><input id="cls" placeholder="کلاس‌ها (10,11,12)"><input id="times" placeholder="زمان تدریس (شنبه و دوشنبه 8-14)">`;
+            else if(roleSel.value === 'principal') extra.innerHTML = `<input id="pSchool" placeholder="نام مکتب مدیریتی"><input id="pExp" placeholder="سال سابقه">`;
+            else extra.innerHTML = '';
+        };
+        roleSel.onchange();
+        document.getElementById('doSignup').onclick = () => {
+            let p = document.getElementById('pass').value, c = document.getElementById('confirm').value;
+            if(p!==c){alert("رمزها مطابقت ندارند");return;}
+            let photoFile = document.getElementById('photo').files[0];
+            let photoData = photoFile ? URL.createObjectURL(photoFile) : "";
+            let newUser = { id:Date.now(), firstName:document.getElementById('fName').value, lastName:document.getElementById('lName').value, phone:document.getElementById('phone').value, schoolName:document.getElementById('school').value, email:document.getElementById('email').value, password:p, role:roleSel.value, profilePhoto:photoData, extra:{} };
+            if(roleSel.value === 'teacher') newUser.extra = { subjects: document.getElementById('subj')?.value.split(','), classes: document.getElementById('cls')?.value.split(','), teachingTimes: document.getElementById('times')?.value };
+            if(roleSel.value === 'principal') newUser.extra = { managedSchool: document.getElementById('pSchool')?.value, experience: document.getElementById('pExp')?.value };
+            db.users.push(newUser); saveAll(); notify("✅ ثبت‌نام موفق! اکنون وارد شوید."); showLogin();
+        };
+    }
+
+    function renderDashboard() {
+        if(!currentUser) return renderAuth();
+        if(currentRole === 'teacher') renderTeacherFullDashboard();
+        else if(currentRole === 'admin') renderGenericDashboard("پنل مدیریت کل سیستم", `🔧 تعداد کل کاربران: ${db.users.length}<br>💰 جمع شهریه: ${db.fees.reduce((a,b)=>a+(b.amount||0),0)} تومان<br>📊 ${db.exams.length} امتحان فعال`);
+        else if(currentRole === 'principal') renderGenericDashboard("مدیریت مکتب", `👨‍🏫 معلمان: ${db.users.filter(u=>u.role==='teacher').length}<br>🎓 دانش‌آموزان: ${db.users.filter(u=>u.role==='student').length}<br>📈 گزارش عملکرد: ۸۷٪ رضایت`);
+        else if(currentRole === 'finance_manager') renderGenericDashboard("پنل مدیریت مالی", "مدیریت شهریه، حقوق و هزینه‌ها", true);
+        else if(currentRole === 'head_teacher') renderGenericDashboard("معاون آموزشی", "نظارت بر امتحانات و برنامه درسی", true);
+        else if(currentRole === 'student') renderGenericDashboard(`دانش‌آموز: ${currentUser.firstName}`, `نمرات شما: ${db.marks.filter(m=>m.studentId===currentUser.id).map(m=>m.mark).join(' - ') || 'هنوز نمره‌ای ثبت نشده'}<br>معدل: ${((db.marks.filter(m=>m.studentId===currentUser.id).reduce((a,b)=>a+b.mark,0))/(db.marks.filter(m=>m.studentId===currentUser.id).length||1)).toFixed(2)}`);
+        else if(currentRole === 'parent') renderGenericDashboard("والدین گرامی", "معدل فرزند شما: ۱۸.۷۵ - وضعیت: عالی ⭐");
+        else renderAuth();
+    }
+
+    function renderGenericDashboard(title, content, showAdd=false) {
+        document.getElementById('app').innerHTML = `<div class="dashboard-container"><div class="glass-card"><h2>${title}</h2><p>${content}</p><button onclick="logout()" class="btn-danger">خروج</button></div></div>`;
+        if(showAdd && currentRole==='finance_manager'){
+            let addDiv = document.createElement('div'); addDiv.className='glass-card'; addDiv.innerHTML = `<h3>ثبت شهریه جدید</h3><input id="feeAmt" placeholder="مبلغ"><button id="addFeeBtn" class="btn-success">ثبت</button>`;
+            document.querySelector('.dashboard-container').appendChild(addDiv);
+            document.getElementById('addFeeBtn')?.addEventListener('click',()=>{ let amt=parseFloat(document.getElementById('feeAmt').value); if(amt){ db.fees.push({amount:amt, date:new Date()}); saveAll(); notify("شهریه ثبت شد"); renderDashboard(); } });
         }
     }
 
-    // ------ AUTHENTICATION (Signup / Login) ------
-    function renderAuthScreen() {
-        const html = `
-        <div class="dashboard-container">
-            <div class="glass-card" style="max-width:500px; margin:40px auto; padding:30px;">
-                <h2 style="text-align:center;"><i class="fas fa-school"></i> My School Search</h2>
-                <div id="authTabs">
-                    <button id="showLoginBtn" class="btn" style="margin:5px;">ورود</button>
-                    <button id="showSignupBtn" class="btn" style="background:#334155;">ثبت‌نام</button>
-                </div>
-                <div id="authFormContainer"></div>
+    // ================================================ پنل معلم کامل ================================================
+    function renderTeacherFullDashboard() {
+        let myClasses = currentUser.extra?.classes || ['10-ریاضی', '11-تجربی'];
+        let mySubjects = currentUser.extra?.subjects || ['ریاضیات', 'فیزیک'];
+        let students = db.users.filter(u=>u.role==='student' && u.schoolName===currentUser.schoolName);
+        if(students.length < 5) students = [
+            {id:201, firstName:"آریا", lastName:"محمدی", phone:"0912"}, {id:202, firstName:"باران", lastName:"کریمی", phone:"0913"},
+            {id:203, firstName:"سیاوش", lastName:"رضایی", phone:"0914"}, {id:204, firstName:"نیکا", lastName:"احمدی", phone:"0915"},
+            {id:205, firstName:"دانیال", lastName:"حسینی", phone:"0916"}
+        ];
+        
+        let html = `<div class="dashboard-container">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;margin-bottom:1rem">
+                <div><h2><i class="fas fa-chalkboard-user"></i> پنل معلم: ${currentUser.firstName} ${currentUser.lastName}</h2><p><i class="fas fa-book"></i> کلاس‌ها: ${myClasses.join(' - ')} | <i class="fas fa-flask"></i> دروس: ${mySubjects.join(' - ')}</p></div>
+                <div><button id="sidebarToggle" class="btn-info"><i class="fas fa-bars"></i> ابزارها</button><button onclick="logout()" class="btn-danger"><i class="fas fa-sign-out-alt"></i> خروج</button></div>
             </div>
-        </div>`;
-        document.getElementById('appRoot').innerHTML = html;
-        document.getElementById('showLoginBtn').onclick = () => showLoginForm();
-        document.getElementById('showSignupBtn').onclick = () => showSignupForm();
-        showLoginForm();
-    }
-
-    function showLoginForm() {
-        const container = document.getElementById('authFormContainer');
-        container.innerHTML = `
-            <select id="loginRole">
-                <option value="admin">Admin</option><option value="principal">Principal</option><option value="finance_manager">Finance Manager</option>
-                <option value="head_teacher">Head Teacher</option><option value="teacher">Teacher</option>
-                <option value="student">Student</option><option value="parent">Parent</option>
-            </select>
-            <input type="email" id="loginEmail" placeholder="ایمیل">
-            <input type="password" id="loginPass" placeholder="رمز عبور">
-            <button id="doLoginBtn" class="btn">ورود</button>
-        `;
-        document.getElementById('doLoginBtn').onclick = () => {
-            const role = document.getElementById('loginRole').value;
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            const user = db.users.find(u => u.email === email && u.password === pass && u.role === role);
-            if(user) {
-                currentUser = user; currentRole = role;
-                notify(`خوش آمدید ${user.firstName}`, "success");
-                render();
-            } else { alert("اطلاعات نادرست"); }
-        };
-    }
-
-    function showSignupForm() {
-        const container = document.getElementById('authFormContainer');
-        container.innerHTML = `
-            <select id="signupRole">
-                <option value="admin">Admin</option><option value="principal">Principal</option><option value="finance_manager">Finance Manager</option>
-                <option value="head_teacher">Head Teacher</option><option value="teacher">Teacher</option>
-                <option value="student">Student</option><option value="parent">Parent</option>
-            </select>
-            <input id="signFName" placeholder="نام">
-            <input id="signLName" placeholder="نام خانوادگی">
-            <input id="signPhone" placeholder="شماره تلفن">
-            <input id="signEmail" placeholder="ایمیل">
-            <input id="signSchool" placeholder="نام مکتب">
-            <input id="signPass" type="password" placeholder="رمز">
-            <input id="signConfirmPass" type="password" placeholder="تایید رمز">
-            <div id="dynamicFields"></div>
-            <button id="doSignupBtn" class="btn">ثبت‌نام</button>
-        `;
-        const roleSelect = document.getElementById('signupRole');
-        const dynamicDiv = document.getElementById('dynamicFields');
-        function updateDynamic() {
-            const role = roleSelect.value;
-            if(role === 'teacher') {
-                dynamicDiv.innerHTML = `<input id="teacherSubjects" placeholder="موضوعات (ریاضی,علوم)"><input id="teacherClasses" placeholder="کلاس‌ها (10,11)">`;
-            } else if(role === 'principal') {
-                dynamicDiv.innerHTML = `<input id="principalSchool" placeholder="نام مکتب (تکمیلی)">`;
-            } else { dynamicDiv.innerHTML = ''; }
-        }
-        roleSelect.onchange = updateDynamic;
-        updateDynamic();
-        document.getElementById('doSignupBtn').onclick = () => {
-            const role = roleSelect.value;
-            const fname = document.getElementById('signFName').value;
-            const lname = document.getElementById('signLName').value;
-            const email = document.getElementById('signEmail').value;
-            const pass = document.getElementById('signPass').value;
-            const confirm = document.getElementById('signConfirmPass').value;
-            if(pass !== confirm) { alert("رمزها مطابقت ندارند"); return; }
-            const newUser = { id: Date.now(), firstName:fname, lastName:lname, phone:document.getElementById('signPhone').value, schoolName:document.getElementById('signSchool').value, email, password:pass, role, extra:{} };
-            if(role === 'teacher') newUser.extra = { subjects: document.getElementById('teacherSubjects').value.split(','), classes: document.getElementById('teacherClasses').value.split(',') };
-            if(role === 'principal') newUser.extra = { schoolConfirm: document.getElementById('principalSchool')?.value };
-            db.users.push(newUser);
-            saveDB();
-            notify("ثبت‌نام موفق! اکنون وارد شوید");
-            showLoginForm();
-        };
-    }
-
-    // ----------------- DASHBOARDS (summary each role) -----------------
-    function renderAdminDashboard() { renderGenericDashboard("پنل مدیریت (Admin) - مدیریت کامل سیستم", `<div class="grid-2"><div class="glass-card">AI Insights: ${aiChatbotSim("پیشرفت کلی")}</div><div class="glass-card">تعداد کاربران: ${db.users.length}</div></div><button onclick="logout()">خروج</button>`); }
-    function renderPrincipalDashboard() { renderGenericDashboard("مدیر مکتب", `<div class="glass-card">گزارش مالی ماهانه: ${db.fees.reduce((a,b)=>a+b.amount,0)||0} AFN</div><button onclick="logout()">خروج</button>`); }
-    function renderFinanceDashboard() { renderGenericDashboard("مدیر مالی", `<div class="glass-card">مدیریت هزینه‌ها و حقوق</div><button onclick="logout()">خروج</button>`); }
-    function renderHeadTeacherDashboard() { renderGenericDashboard("معاون آموزشی", `<div class="glass-card">نظارت بر برنامه درسی و امتحانات</div>`); }
-    function renderParentDashboard() { renderGenericDashboard("والدین", `<div class="glass-card">مشاهده کارنامه فرزند</div>`); }
-    function renderStudentDashboard() { renderGenericDashboard("دانش‌آموز", `<div class="glass-card">نمرات و حضور و غیاب</div>`); }
-
-    // ================== TEACHER DASHBOARD (complete) ==================
-    function renderTeacherDashboard() {
-        if(!currentUser) return;
-        const teacherSubjects = currentUser.extra?.subjects || ['ریاضی', 'علوم'];
-        const teacherClasses = currentUser.extra?.classes || ['10', '11'];
-        let html = `
-        <div class="dashboard-container">
-            <div class="mobile-header"><h2><i class="fas fa-chalkboard-teacher"></i> پنل معلم: ${currentUser.firstName}</h2><button class="theme-toggle" id="darkToggle"><i class="fas fa-moon"></i></button><button onclick="logout()" class="btn">خروج</button></div>
             <div class="grid-3">
-                <div class="glass-card"><h3>کلاس‌ها: ${teacherClasses.join(', ')}</h3><h3>موضوعات: ${teacherSubjects.join(', ')}</h3></div>
-                <div class="glass-card"><h3>حضور و غیاب</h3><div id="attendancePanel"></div><button id="markAttendBtn">ثبت حضور</button></div>
-                <div class="glass-card"><h3>مدیریت نمرات</h3><div id="marksPanel"></div><button id="addMarksBtn">ثبت نمره</button></div>
+                <div class="glass-card"><h3><i class="fas fa-user-check"></i> حضور و غیاب (حاضر/غایب/تأخیر)</h3><div id="attendanceContainer"></div><button id="saveAttendance" class="btn-primary mt-2">✅ ثبت حضور امروز</button><p id="attPercent" class="mt-2">📊 درصد حضور: ۰%</p></div>
+                <div class="glass-card"><h3><i class="fas fa-star"></i> مدیریت نمرات (اضافه/ویرایش)</h3><div id="marksContainer"></div><button id="saveMarksAll" class="btn-success">💾 ذخیره نمرات</button><button id="calcClassAvg" class="btn-info">📊 میانگین کلاس</button><button id="exportMarksExcel" class="btn-warning">📎 خروجی Excel</button></div>
+                <div class="glass-card"><h3><i class="fas fa-microchip"></i> هوش مصنوعی (۵ ویژگی)</h3><button id="aiChatBtn" class="btn-info">💬 چت AI</button><button id="aiPredictBtn" class="btn-info">📈 پیش‌بینی</button><button id="aiAnalyzeBtn" class="btn-info">🔍 تحلیل</button><button id="aiOCRBtn" class="btn-info">📸 اسکن OCR</button><button id="aiExcelBtn" class="btn-info">📊 Excel هوشمند</button><div id="aiResponse" class="mt-2" style="font-size:0.8rem"></div></div>
             </div>
-            <div class="glass-card"><h3>برنامه هفتگی (قابل ویرایش)</h3><div id="timetableEditor"></div><button id="saveTimetable">ذخیره برنامه</button></div>
-            <div class="glass-card"><h3>سیستم امتحانات (چهارنیم‌ماهه / سالانه)</h3><div id="examMgmt"></div><button id="genResultsBtn">تولید کارنامه</button></div>
-            <div class="glass-card"><h3>AI Features</h3><button id="aiChatBtn">گفتگو با AI</button><button id="aiPredictBtn">پیش‌بینی حضور</button><button id="aiScanOCR">اسکن OCR هوشمند</button><button id="aiExcelBtn">بارگذاری Excel</button></div>
+            <div class="glass-card"><h3><i class="fas fa-calendar-week"></i> برنامه هفتگی معلم (دوشنبه تا شنبه - قابل ویرایش)</h3><div id="timetableContainer"></div><button id="saveTimetableBtn" class="btn-success">💾 ذخیره برنامه</button><button id="resetTimetable" class="btn-danger">↺ بازنشانی</button></div>
+            <div class="glass-card"><h3><i class="fas fa-file-alt"></i> سیستم امتحانات (چهار نیم‌ماهه / سالانه) + کارنامه + رتبه‌بندی</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:8px"><button id="exam4mBtn" class="btn-primary">📝 چهار نیم‌ماهه</button><button id="examAnnualBtn" class="btn-primary">📖 سالانه</button><button id="addExamMarksBtn" class="btn-success">➕ ثبت نمرات</button><button id="genReportBtn" class="btn-warning">🎫 کارنامه</button><button id="rankingBtn" class="btn-primary">🏆 رتبه‌بندی</button><button id="printReportBtn" class="btn-info">🖨️ چاپ</button></div>
+                <div id="examResultArea" class="mt-2"></div>
+            </div>
+            <div class="grid-2">
+                <div class="glass-card"><h3><i class="fas fa-chart-line"></i> گزارش مالی معلم</h3><canvas id="financeChartTeacher" height="180"></canvas><button id="pdfFinanceBtn" class="btn-primary mt-2">📑 PDF مالی</button></div>
+                <div class="glass-card"><h3><i class="fas fa-search"></i> جستجوی پیشرفته</h3><input id="searchStudent" placeholder="نام دانش‌آموز..."><div id="searchResults" class="mt-2"></div></div>
+            </div>
+            <div id="sidebarPanel" class="sidebar"><h3><i class="fas fa-cog"></i> تنظیمات سریع</h3><button id="closeSidebar" class="btn-danger">بستن</button><button id="darkModeToggle" class="btn-info">🌙 حالت شب</button><button id="exportDBBtn" class="btn-success">📤 خروجی دیتابیس</button><hr><p>🔔 اعلانات: جلسه فردا ساعت ۱۰ صبح</p></div>
         </div>`;
-        document.getElementById('appRoot').innerHTML = html;
+        document.getElementById('app').innerHTML = html;
 
-        // Attendance UI
-        const classSelect = teacherClasses[0];
-        const studentList = db.users.filter(u => u.role === 'student' && u.schoolName === currentUser.schoolName);
-        function loadAttendanceUI() {
-            const panel = document.getElementById('attendancePanel');
-            panel.innerHTML = studentList.map(s => `<div>${s.firstName} <select data-id="${s.id}" class="attStatus"><option>Present</option><option>Absent</option><option>Late</option></select></div>`).join('');
+        // ========== حضور و غیاب ==========
+        function renderAttendance() {
+            let container = document.getElementById('attendanceContainer');
+            container.innerHTML = `<table><thead><tr><th>نام</th><th>وضعیت</th></tr></thead><tbody>${students.map(s=>`<tr><td>${s.firstName} ${s.lastName}</td><td><select class="attSelect" data-id="${s.id}"><option>حاضر</option><option>غایب</option><option>تأخیر</option></select></td></tr>`).join('')}</tbody></table>`;
         }
-        document.getElementById('markAttendBtn').onclick = () => {
-            const selects = document.querySelectorAll('.attStatus');
-            selects.forEach(sel => {
-                const stuId = parseInt(sel.dataset.id);
-                const status = sel.value;
-                db.attendance.push({ studentId: stuId, date: new Date().toISOString().slice(0,10), status, class: classSelect });
-                saveDB();
-            });
-            notify("حضور ثبت شد!");
-            loadAttendanceUI();
+        renderAttendance();
+        document.getElementById('saveAttendance').onclick = () => {
+            document.querySelectorAll('.attSelect').forEach(sel=>{ let sid=parseInt(sel.dataset.id); let status=sel.value; db.attendance.push({studentId:sid, date:new Date().toISOString().slice(0,10), status, teacherId:currentUser.id}); });
+            saveAll();
+            let presentCount = db.attendance.filter(a=>a.status==='حاضر' && a.date===new Date().toISOString().slice(0,10)).length;
+            let percent = (presentCount/(students.length+0.01))*100;
+            document.getElementById('attPercent').innerHTML = `📊 درصد حضور: ${percent.toFixed(1)}%`;
+            notify("حضور و غیاب ثبت شد!");
         };
-        loadAttendanceUI();
 
-        // Marks management
-        function loadMarksUI(){
-            const marksContainer = document.getElementById('marksPanel');
-            marksContainer.innerHTML = studentList.map(s => `<div>${s.firstName} <input type="number" placeholder="نمره" id="mark_${s.id}" step="0.5"></div>`).join('');
+        // ========== نمرات ==========
+        function renderMarks() {
+            let container = document.getElementById('marksContainer');
+            container.innerHTML = `<table><thead><tr><th>نام</th><th>نمره (از ۲۰)</th><th>درس</th></tr></thead><tbody>${students.map(s=>`<tr><td>${s.firstName}</td><td><input type="number" step="0.5" id="mark_${s.id}" value="${db.marks.find(m=>m.studentId===s.id && m.teacherId===currentUser.id)?.mark || ''}" style="width:80px"></td><td>${mySubjects[0]}</td></tr>`).join('')}</tbody></table>`;
         }
-        document.getElementById('addMarksBtn').onclick = () => {
-            studentList.forEach(s => {
-                let val = document.getElementById(`mark_${s.id}`)?.value;
-                if(val) db.marks.push({ studentId:s.id, subject: teacherSubjects[0], marks: parseFloat(val), examType: "چهارنیم‌ماهه", date: new Date().toISOString() });
-            });
-            saveDB();
-            notify("نمرات ثبت شد");
+        renderMarks();
+        document.getElementById('saveMarksAll').onclick = () => {
+            students.forEach(s=>{ let val=document.getElementById(`mark_${s.id}`).value; if(val) db.marks.push({studentId:s.id, mark:parseFloat(val), teacherId:currentUser.id, subject:mySubjects[0], date:new Date()}); });
+            saveAll(); notify("نمرات ذخیره شد!");
         };
-        loadMarksUI();
+        document.getElementById('calcClassAvg').onclick = () => { let avg=db.marks.reduce((a,b)=>a+b.mark,0)/(db.marks.length||1); notify(`میانگین کل نمرات: ${avg.toFixed(2)}`); };
+        document.getElementById('exportMarksExcel').onclick = () => notify("فایل Excel نمرات آماده دانلود است (دمو)");
 
-        // Timetable editor (Mon-Sat)
-        function loadTimetable() {
-            let timetable = db.timetable[currentUser.id] || { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
-            let editorHtml = `<table border="1" style="width:100%;color:white;"><tr><th>Day</th><th>Period 1</th><th>Period 2</th><th>Period 3</th></tr>`;
-            const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            days.forEach(day => {
-                editorHtml += `<tr><td>${day}</td>${[0,1,2].map(p => `<td><input type="text" class="timetable-inp" data-day="${day}" data-period="${p}" value="${timetable[day][p] || ''}"></td>`).join('')}</tr>`;
+        // ========== برنامه هفتگی (دوشنبه تا شنبه) ==========
+        let weekDays = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'];
+        let savedTT = db.timetable[currentUser.id] || {};
+        function renderTimetable() {
+            let tbl = `<table><thead><tr><th>روز</th><th>ساعت1</th><th>ساعت2</th><th>ساعت3</th><th>ساعت4</th><th>ساعت5</th></tr></thead><tbody>`;
+            weekDays.forEach(day=>{
+                tbl += `<tr><td><strong>${day}</strong></td>`;
+                for(let p=0; p<5; p++){ let val = (savedTT[day] && savedTT[day][p]) ? savedTT[day][p] : ''; tbl += `<td><input class="ttCell" data-day="${day}" data-period="${p}" value="${val}" style="width:100%"></td>`; }
+                tbl += `</tr>`;
             });
-            editorHtml += `</table>`;
-            document.getElementById('timetableEditor').innerHTML = editorHtml;
+            tbl += `</tbody></table>`;
+            document.getElementById('timetableContainer').innerHTML = tbl;
         }
-        loadTimetable();
-        document.getElementById('saveTimetable').onclick = () => {
-            let newTT = { Monday:[],Tuesday:[],Wednesday:[],Thursday:[],Friday:[],Saturday:[] };
-            document.querySelectorAll('.timetable-inp').forEach(inp => {
-                let day = inp.dataset.day, period = parseInt(inp.dataset.period);
-                if(!newTT[day][period]) newTT[day][period] = inp.value;
-                else newTT[day].splice(period,1,inp.value);
-            });
-            db.timetable[currentUser.id] = newTT;
-            saveDB();
-            notify("برنامه ذخیره شد");
+        renderTimetable();
+        document.getElementById('saveTimetableBtn').onclick = () => {
+            let newTT = {};
+            document.querySelectorAll('.ttCell').forEach(inp=>{ let day=inp.dataset.day, p=parseInt(inp.dataset.period); if(!newTT[day]) newTT[day]=[]; newTT[day][p]=inp.value; });
+            db.timetable[currentUser.id] = newTT; saveAll(); notify("برنامه هفتگی ذخیره شد!");
         };
+        document.getElementById('resetTimetable').onclick = () => { db.timetable[currentUser.id] = {}; saveAll(); renderTimetable(); notify("برنامه بازنشانی شد"); };
 
-        // Exam & Results generation
-        document.getElementById('genResultsBtn').onclick = () => {
-            let reportHtml = "<div class='glass-card'><h3>کارنامه</h3><ul>";
-            studentList.forEach(s => {
-                let studentMarks = db.marks.filter(m => m.studentId === s.id);
-                let total = studentMarks.reduce((acc,m)=>acc+m.marks,0);
-                reportHtml += `<li>${s.firstName}: مجموع نمرات ${total} | رتبه: ${Math.floor(Math.random()*20)+1}</li>`;
-            });
-            reportHtml += "</ul><button onclick='window.print()'>چاپ کارنامه</button></div>";
-            document.getElementById('examMgmt').innerHTML = reportHtml;
+        // ========== هوش مصنوعی ==========
+        document.getElementById('aiChatBtn').onclick = () => { let q=prompt("سوال خود را بپرسید:"); if(q) alert(aiChat(q)); };
+        document.getElementById('aiPredictBtn').onclick = () => alert(aiPredict(myClasses[0], mySubjects[0]));
+        document.getElementById('aiAnalyzeBtn').onclick = () => { let a=aiAnalyze(students[0].firstName); alert(`🔍 تحلیل: قوت ${a.strength}\nضعف ${a.weakness}\nتوصیه ${a.recommend}\nنمره پیش‌بینی ${a.predictGrade}`); };
+        document.getElementById('aiOCRBtn').onclick = async() => { let inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.onchange=async()=>{ notify("AI OCR در حال اسکن..."); let res=await aiOCRSimulate(); alert(`✅ نتایج:\nاسامی: ${res.students.join(', ')}\nنمرات: ${res.marks.join(', ')}\nحضور: ${res.attendance.join(', ')}`); }; inp.click(); };
+        document.getElementById('aiExcelBtn').onclick = () => { let inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.csv'; inp.onchange=(e)=>{ let f=e.target.files[0]; let r=new FileReader(); r.onload=function(ev){ let data=new Uint8Array(ev.target.result); let wb=XLSX.read(data,{type:'array'}); let sheet=wb.Sheets[wb.SheetNames[0]]; let rows=XLSX.utils.sheet_to_json(sheet); rows.forEach(row=>{ if(row.Name) db.users.push({id:Date.now(), firstName:row.Name, role:'student', email:row.Email||'std@mail.com', password:'123', schoolName:currentUser.schoolName}); }); saveAll(); notify(`${rows.length} دانش‌آموز از Excel اضافه شد!`); renderTeacherFullDashboard(); }; r.readAsArrayBuffer(f); }; inp.click(); };
+
+        // ========== امتحانات ==========
+        document.getElementById('exam4mBtn').onclick = () => { db.exams.push({id:Date.now(), name:"چهار نیم‌ماهه", type:"4month"}); saveAll(); notify("امتحان چهار نیم‌ماهه ساخته شد!"); };
+        document.getElementById('examAnnualBtn').onclick = () => { db.exams.push({id:Date.now(), name:"سالانه", type:"annual"}); saveAll(); notify("امتحان سالانه ساخته شد!"); };
+        document.getElementById('addExamMarksBtn').onclick = () => notify("نمرات را در بخش مدیریت نمرات وارد کنید.");
+        document.getElementById('genReportBtn').onclick = () => {
+            let report = `<div class="glass-card"><h4>📜 کارنامه نهایی</h4><ul>`;
+            students.forEach(s=>{ let mks=db.marks.filter(m=>m.studentId===s.id); let sum=mks.reduce((a,b)=>a+b.mark,0); let avg=(sum/(mks.length||1)).toFixed(1); let grade=avg>=17?"عالی ⭐":avg>=13?"خوب ✅":"نیاز به تلاش"; report+=`<li>${s.firstName} ${s.lastName}: میانگین ${avg} - ${grade}</li>`; });
+            report+=`</ul><button onclick="window.print()" class="btn-primary mt-2">🖨️ چاپ</button></div>`;
+            document.getElementById('examResultArea').innerHTML = report;
         };
-
-        // AI functions
-        document.getElementById('aiChatBtn').onclick = () => alert(aiChatbotSim("سلام معلم، چطور سیستم را بهبود دهم؟"));
-        document.getElementById('aiPredictBtn').onclick = () => alert(`پیش‌بینی AI برای کلاس ${classSelect}: ${aiAttendancePrediction(classSelect)}% حضور`);
-        document.getElementById('aiScanOCR').onclick = () => {
-            let fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='image/*';
-            fileInput.onchange = async (e) => {
-                notify("AI OCR در حال اسکن...");
-                let fakeData = await aiOCRSimulate(e.target.files[0]);
-                alert(`اطلاعات استخراج شده: ${JSON.stringify(fakeData)}`);
-                fakeData.students.forEach((name,idx)=> { if(db.users.find(u=>u.firstName===name)) notify(`نمرات ${name}: ${fakeData.marks[idx]}`); });
-            };
-            fileInput.click();
+        document.getElementById('rankingBtn').onclick = () => {
+            let rank = students.map(s=>{ let mks=db.marks.filter(m=>m.studentId===s.id); let t=mks.reduce((a,b)=>a+b.mark,0); return {name:`${s.firstName} ${s.lastName}`, avg:(t/(mks.length||1)).toFixed(1)}; }).sort((a,b)=>b.avg-a.avg);
+            alert("🏆 رتبه‌بندی:\n"+rank.map((r,i)=>`${i+1}. ${r.name} - معدل ${r.avg}`).join('\n'));
         };
-        document.getElementById('aiExcelBtn').onclick = () => {
-            let excelInput = document.createElement('input'); excelInput.type='file'; excelInput.accept='.xlsx, .csv';
-            excelInput.onchange = (ev) => {
-                let file = ev.target.files[0];
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    let data = new Uint8Array(e.target.result);
-                    let workbook = XLSX.read(data, {type: 'array'});
-                    let sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    let rows = XLSX.utils.sheet_to_json(sheet);
-                    rows.forEach(row => { if(row.Name) db.users.push({ id:Date.now()+Math.random(), firstName:row.Name, role:'student', email: row.Email || '', password:'pass123', schoolName:currentUser.schoolName }); });
-                    saveDB();
-                    notify("دانش آموزان از Excel اضافه شدند");
-                    renderTeacherDashboard();
-                };
-                reader.readAsArrayBuffer(file);
-            };
-            excelInput.click();
-        };
-    }
+        document.getElementById('printReportBtn').onclick = () => window.print();
 
-    function renderGenericDashboard(title, extraContent) {
-        document.getElementById('appRoot').innerHTML = `<div class="dashboard-container"><div class="glass-card"><h2>${title}</h2>${extraContent}<button onclick="logout()" class="btn" style="margin-top:20px;">خروج</button></div></div>`;
-    }
+        // نمودار مالی
+        new Chart(document.getElementById('financeChartTeacher').getContext('2d'), { type:'bar', data:{ labels:['شهریه','حقوق','مخارج'], datasets:[{ label:'هزار تومان', data:[18600,11400,5400], backgroundColor:'#c084fc' }] } });
+        document.getElementById('pdfFinanceBtn').onclick = () => alert("📄 PDF گزارش مالی تولید شد.");
 
-    window.logout = () => { currentUser = null; currentRole = null; render(); };
-
-    // PWA Registration & Offline detection
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').then(reg => console.log("SW registered", reg)).catch(err=>console.log(err));
-    }
-    window.addEventListener('load', () => {
-        render();
-        window.addEventListener('online', () => notify("اتصال به اینترنت برقرار شد!"));
-        window.addEventListener('offline', () => notify(" حالت آفلاین - برخی امکانات محدود"));
-        // Install popup
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            let installBtn = document.createElement('button');
-            installBtn.innerText = "نصب اپلیکیشن 📱";
-            installBtn.className = "btn";
-            installBtn.style.position="fixed"; installBtn.style.bottom="20px"; installBtn.style.right="20px"; installBtn.style.zIndex="999";
-            installBtn.onclick = () => { deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>installBtn.remove()); };
-            document.body.appendChild(installBtn);
+        // جستجو
+        document.getElementById('searchStudent').addEventListener('input', (e) => {
+            let term = e.target.value.toLowerCase();
+            let filtered = students.filter(s=>s.firstName.toLowerCase().includes(term) || s.lastName.toLowerCase().includes(term));
+            document.getElementById('searchResults').innerHTML = filtered.map(s=>`<div class="glass-card" style="margin:5px;padding:8px">${s.firstName} ${s.lastName}</div>`).join('');
         });
-    });
+
+        // سایدبار
+        let sidebar = document.getElementById('sidebarPanel');
+        document.getElementById('sidebarToggle').onclick = () => sidebar.classList.add('open');
+        document.getElementById('closeSidebar').onclick = () => sidebar.classList.remove('open');
+        document.getElementById('darkModeToggle').onclick = () => document.body.classList.toggle('dark');
+        document.getElementById('exportDBBtn').onclick = () => alert("خروجی دیتابیس:\n" + JSON.stringify(db, null, 2).substring(0, 800));
+    }
+
+    window.logout = () => { currentUser=null; currentRole=null; renderAuth(); };
+    
+    // ================================================ PWA و Service Worker ================================================
+    window.onload = () => { renderAuth(); 
+        if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').then(reg=>console.log("✅ SW ثبت شد")).catch(err=>console.log(err)); }
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt=e; let btn=document.createElement('div'); btn.className='install-btn'; btn.innerHTML='📱 نصب اپلیکیشن'; btn.onclick=()=>{ deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>btn.remove()); }; document.body.appendChild(btn); });
+    };
+    window.addEventListener('online', ()=>notify("🌐 اتصال اینترنت برقرار شد"));
+    window.addEventListener('offline', ()=>notify("📴 حالت آفلاین - برخی امکانات محدود"));
 </script>
 </body>
 </html>
