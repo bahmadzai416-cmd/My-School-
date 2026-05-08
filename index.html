@@ -3,34 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>سیستم مدیریت مکتب - School Management</title>
-  <meta name="description" content="سیستم مدیریت مکتب با پشتیبانی دری و پښتو">
+  <title>AI School Management System - سیستم مدیریت مکتب</title>
+  <meta name="description" content="Advanced AI-powered school management system with OCR, Dari & Pashto support">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#059669">
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Pashto:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- React & ReactDOM -->
+  <!-- React 18 -->
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
   
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Tesseract.js for OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   
-  <!-- XLSX for Excel export -->
+  <!-- SheetJS for Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  
+  <!-- jsPDF for PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     * { font-family: 'Vazirmatn', sans-serif; }
     body { background: #f0fdf4; }
-    .rtl { direction: rtl; }
-    .ltr { direction: ltr; }
-    .card-hover:hover { transform: translateY(-2px); transition: all 0.2s; }
+    .font-pashto { font-family: 'Noto Sans Pashto', sans-serif; }
+    .transition-all { transition: all 0.2s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
     input, select, textarea { font-family: 'Vazirmatn', sans-serif; }
+    .ocr-highlight { background: #fef3c7; transition: all 0.3s; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .scanning { animation: pulse 1.5s infinite; }
+    
+    /* RTL Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #059669; border-radius: 10px; }
+    
+    /* Print styles for PDF */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+      .print-friendly { box-shadow: none; border: 1px solid #ddd; }
+    }
   </style>
 </head>
 <body>
@@ -38,79 +58,125 @@
 
   <script>
     // ==================== LOCAL STORAGE KEYS ====================
-    const STORAGE_KEYS = {
+    const STORAGE = {
       STUDENTS: 'school_students',
       CLASSES: 'school_classes',
       SUBJECTS: 'school_subjects',
       EXAMS: 'school_exams',
       RESULTS: 'school_results',
+      USERS: 'school_users',
       CURRENT_USER: 'school_current_user',
-      USERS: 'school_users'
+      SCAN_SESSIONS: 'school_scan_sessions',
+      SETTINGS: 'school_settings'
     };
 
     // ==================== INITIAL DATA ====================
-    function initializeData() {
-      if (!localStorage.getItem(STORAGE_KEYS.STUDENTS)) {
-        localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify([
-          { id: '1', roll_number: '001', full_name: 'احمد رضا', father_name: 'محمد', class_id: '1', academic_year: '1405' },
-          { id: '2', roll_number: '002', full_name: 'فاطمه حسینی', father_name: 'علی', class_id: '1', academic_year: '1405' },
-          { id: '3', roll_number: '003', full_name: 'محمد امین', father_name: 'کریم', class_id: '2', academic_year: '1405' }
+    function initializeDatabase() {
+      if (!localStorage.getItem(STORAGE.STUDENTS)) {
+        localStorage.setItem(STORAGE.STUDENTS, JSON.stringify([
+          { id: '1', roll_number: '001', full_name: 'احمد رضا', father_name: 'محمد', class_id: '1', academic_year: '1405', phone: '0771234567' },
+          { id: '2', roll_number: '002', full_name: 'فاطمه حسینی', father_name: 'علی', class_id: '1', academic_year: '1405', phone: '0771234568' },
+          { id: '3', roll_number: '003', full_name: 'محمد امین', father_name: 'کریم', class_id: '2', academic_year: '1405', phone: '0771234569' },
+          { id: '4', roll_number: '004', full_name: 'زینب کریمی', father_name: 'حسن', class_id: '2', academic_year: '1405', phone: '0771234570' },
+          { id: '5', roll_number: '005', full_name: 'علی رضایی', father_name: 'رضا', class_id: '3', academic_year: '1405', phone: '0771234571' }
         ]));
       }
-      if (!localStorage.getItem(STORAGE_KEYS.CLASSES)) {
-        localStorage.setItem(STORAGE_KEYS.CLASSES, JSON.stringify([
-          { id: '1', name: 'صنف هفتم', grade_level: 7, academic_year: '1405' },
-          { id: '2', name: 'صنف هشتم', grade_level: 8, academic_year: '1405' },
-          { id: '3', name: 'صنف نهم', grade_level: 9, academic_year: '1405' }
+      if (!localStorage.getItem(STORAGE.CLASSES)) {
+        localStorage.setItem(STORAGE.CLASSES, JSON.stringify([
+          { id: '1', name: 'صنف هفتم', name_pashto: 'اووم ټولګی', grade_level: 7, academic_year: '1405' },
+          { id: '2', name: 'صنف هشتم', name_pashto: 'اتم ټولګی', grade_level: 8, academic_year: '1405' },
+          { id: '3', name: 'صنف نهم', name_pashto: 'نهم ټولګی', grade_level: 9, academic_year: '1405' },
+          { id: '4', name: 'صنف دهم', name_pashto: 'لسم ټولګی', grade_level: 10, academic_year: '1405' }
         ]));
       }
-      if (!localStorage.getItem(STORAGE_KEYS.SUBJECTS)) {
-        localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify([
-          { id: '1', name: 'ریاضی', full_marks: 100 },
-          { id: '2', name: 'دری', full_marks: 100 },
-          { id: '3', name: 'انگلیسی', full_marks: 100 }
+      if (!localStorage.getItem(STORAGE.SUBJECTS)) {
+        localStorage.setItem(STORAGE.SUBJECTS, JSON.stringify([
+          { id: '1', name: 'ریاضی', name_pashto: 'ریاضی', full_marks: 100, pass_marks: 40 },
+          { id: '2', name: 'دری', name_pashto: 'دری', full_marks: 100, pass_marks: 40 },
+          { id: '3', name: 'انگلیسی', name_pashto: 'انګلیسي', full_marks: 100, pass_marks: 40 },
+          { id: '4', name: 'علوم', name_pashto: 'ساینس', full_marks: 100, pass_marks: 40 },
+          { id: '5', name: 'اسلامیات', name_pashto: 'اسلامیات', full_marks: 100, pass_marks: 40 }
         ]));
       }
-      if (!localStorage.getItem(STORAGE_KEYS.EXAMS)) {
-        localStorage.setItem(STORAGE_KEYS.EXAMS, JSON.stringify([
-          { id: '1', name: 'امتحان نیم‌سال اول', class_id: '1', academic_year: '1405' }
+      if (!localStorage.getItem(STORAGE.EXAMS)) {
+        localStorage.setItem(STORAGE.EXAMS, JSON.stringify([
+          { id: '1', name: 'امتحان نیم‌سال اول', name_pashto: 'لومړی نیم کلنی امتحان', class_id: '1', academic_year: '1405', exam_date: '1405/08/15' },
+          { id: '2', name: 'امتحان نیم‌سال دوم', name_pashto: 'دویم نیم کلنی امتحان', class_id: '1', academic_year: '1405', exam_date: '1405/12/20' }
         ]));
       }
-      if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([
-          { id: '1', email: 'admin@school.com', password: 'admin123', role: 'admin', full_name: 'مدیر سیستم' }
+      if (!localStorage.getItem(STORAGE.RESULTS)) {
+        localStorage.setItem(STORAGE.RESULTS, JSON.stringify([]));
+      }
+      if (!localStorage.getItem(STORAGE.USERS)) {
+        localStorage.setItem(STORAGE.USERS, JSON.stringify([
+          { id: '1', email: 'admin@school.com', password: 'admin123', role: 'admin', full_name: 'مدیر سیستم', full_name_pashto: 'د سیسټم مدیر' },
+          { id: '2', email: 'teacher@school.com', password: 'teacher123', role: 'teacher', full_name: 'معلم', full_name_pashto: 'ښوونکی' }
         ]));
+      }
+      if (!localStorage.getItem(STORAGE.SETTINGS)) {
+        localStorage.setItem(STORAGE.SETTINGS, JSON.stringify({
+          schoolName: 'مکتب خصوصی الف',
+          schoolNamePashto: 'الخصوصي ښوونځی الف',
+          schoolLogo: '🎓',
+          academicYear: '1405',
+          defaultLanguage: 'dari'
+        }));
       }
     }
-
-    initializeData();
+    initializeDatabase();
 
     // ==================== HELPER FUNCTIONS ====================
     function getData(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
     function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+    
+    function getStudents() { return getData(STORAGE.STUDENTS); }
+    function getClasses() { return getData(STORAGE.CLASSES); }
+    function getSubjects() { return getData(STORAGE.SUBJECTS); }
+    function getExams() { return getData(STORAGE.EXAMS); }
+    function getResults() { return getData(STORAGE.RESULTS); }
+    function getSettings() { return JSON.parse(localStorage.getItem(STORAGE.SETTINGS) || '{}'); }
 
-    // ==================== TRANSLATIONS ====================
-    const t = {
+    // ==================== COMPLETE TRANSLATIONS (Dari + Pashto) ====================
+    const translations = {
       dari: {
         appName: 'سیستم مدیریت مکتب',
+        appSubtitle: 'مدیریت هوشمند آموزشی',
         login: 'ورود',
         logout: 'خروج',
+        signup: 'ثبت نام',
+        email: 'ایمیل',
+        password: 'رمز عبور',
         dashboard: 'داشبورد',
         students: 'شاگردان',
         classes: 'صنف‌ها',
         subjects: 'مضمون‌ها',
         exams: 'امتحانات',
         results: 'نتایج',
-        scan: 'اسکن',
+        scan: 'اسکن هوشمند',
+        attendance: 'حاضری',
+        reports: 'گزارشات',
+        settings: 'تنظیمات',
         add: 'افزودن',
         edit: 'ویرایش',
         delete: 'حذف',
         save: 'ذخیره',
         cancel: 'انصراف',
+        confirm: 'تأیید',
+        back: 'بازگشت',
+        saveAll: 'ذخیره همه',
+        export: 'خروجی',
+        import: 'ورودی',
         rollNumber: 'نمبر رول',
         fullName: 'نام کامل',
         fatherName: 'نام پدر',
+        phone: 'شماره تماس',
         academicYear: 'سال تعلیمی',
+        className: 'نام صنف',
+        subjectName: 'نام مضمون',
+        examName: 'نام امتحان',
+        examDate: 'تاریخ امتحان',
+        fullMarks: 'نمره کامل',
+        passMarks: 'نمره قبولی',
         total: 'مجموع',
         percentage: 'فیصدی',
         status: 'وضعیت',
@@ -118,33 +184,91 @@
         pass: 'کامیاب',
         conditional: 'مشروط',
         fail: 'ناکام',
+        present: 'حاضر',
+        absent: 'غایب',
+        late: 'تأخیر',
         welcome: 'خوش آمدید',
         loading: 'در حال بارگذاری...',
+        processing: 'در حال پردازش...',
+        success: 'موفقیت',
+        error: 'خطا',
+        errorOccurred: 'خطایی رخ داده است',
+        confirmDelete: 'آیا مطمئن هستید؟ این عمل قابل برگشت نیست',
+        deleteSuccess: 'با موفقیت حذف شد',
+        saveSuccess: 'با موفقیت ذخیره شد',
         totalStudents: 'مجموع شاگردان',
         totalClasses: 'مجموع صنف‌ها',
         totalSubjects: 'مجموع مضمون‌ها',
-        totalExams: 'مجموع امتحانات'
+        totalExams: 'مجموع امتحانات',
+        selectClass: 'انتخاب صنف',
+        selectSubject: 'انتخاب مضمون',
+        selectExam: 'انتخاب امتحان',
+        selectStudent: 'انتخاب شاگرد',
+        uploadMarksheet: 'آپلود ورق نمرات',
+        scanWithCamera: 'اسکن با دوربین',
+        reviewExtracted: 'مرور داده‌های استخراج شده',
+        extractedRows: 'ردیف استخراج شد',
+        written: 'تحریری',
+        oral: 'تقریری',
+        activity: 'فعالیت',
+        homework: 'کار خانگی',
+        sum: 'مجموع',
+        gpa: 'معدل',
+        cgpa: 'معدل کل',
+        promotion: 'ترفیع',
+        bookDistribution: 'توزیع کتاب',
+        smsAlert: 'پیامک',
+        pdfExport: 'خروجی PDF',
+        excelExport: 'خروجی Excel',
+        camera: 'دوربین',
+        gallery: 'گالری',
+        aiProcessing: 'در حال پردازش با هوش مصنوعی...',
+        scanComplete: 'اسکن کامل شد',
+        lowConfidence: 'اعتماد پایین - لطفاً بررسی کنید',
+        noData: 'هیچ داده‌ای وجود ندارد',
+        rank1: 'نفر اول',
+        rank2: 'نفر دوم',
+        rank3: 'نفر سوم'
       },
       pashto: {
         appName: 'د مکتب مدیریت سیسټم',
+        appSubtitle: 'هوشمند تعلیمي مدیریت',
         login: 'ننوتل',
         logout: 'وتل',
+        signup: 'ثبت نام',
+        email: 'برېښلیک',
+        password: 'پټ کلی',
         dashboard: 'ډشبورډ',
         students: 'زده کوونکي',
         classes: 'ټولګي',
         subjects: 'مضمونونه',
         exams: 'امتحانونه',
         results: 'پایلې',
-        scan: 'سکین',
+        scan: 'هوشمند سکین',
+        attendance: 'حاضري',
+        reports: 'راپورونه',
+        settings: 'ترتیبات',
         add: 'زیاتول',
         edit: 'سمول',
         delete: 'ړنګول',
         save: 'خوندي کول',
         cancel: 'ردول',
+        confirm: 'تایید',
+        back: 'بیرته',
+        saveAll: 'ټول خوندي کول',
+        export: 'صادرول',
+        import: 'راوړل',
         rollNumber: 'رول نمبر',
         fullName: 'بشپړ نوم',
         fatherName: 'د پلار نوم',
+        phone: 'د تلیفون شمېره',
         academicYear: 'تعلیمي کال',
+        className: 'د ټولګي نوم',
+        subjectName: 'د مضمون نوم',
+        examName: 'د امتحان نوم',
+        examDate: 'د امتحان نیټه',
+        fullMarks: 'بشپړ نمرې',
+        passMarks: 'د بریالیتوب نمرې',
         total: 'ټولټال',
         percentage: 'سلنه',
         status: 'وضعیت',
@@ -152,116 +276,219 @@
         pass: 'بریالی',
         conditional: 'مشروط',
         fail: 'ناکام',
+        present: 'حاضر',
+        absent: 'غایب',
+        late: 'نوخته',
         welcome: 'ښه راغلاست',
         loading: 'په لاس راوړل کیږي...',
+        processing: 'په کار دی...',
+        success: 'بریالیتوب',
+        error: 'تېروتنه',
+        errorOccurred: 'تېروتنه رامنځته شوه',
+        confirmDelete: 'آیا تاسو ډاډه یاست؟ دا عمل بیرته نه گرځول کیږي',
+        deleteSuccess: 'په بریالیتوب سره ړنګ شو',
+        saveSuccess: 'په بریالیتوب سره خوندي شو',
         totalStudents: 'ټول زده کوونکي',
         totalClasses: 'ټول ټولګي',
         totalSubjects: 'ټول مضمونونه',
-        totalExams: 'ټول امتحانونه'
+        totalExams: 'ټول امتحانونه',
+        selectClass: 'ټولګی وټاکئ',
+        selectSubject: 'مضمون وټاکئ',
+        selectExam: 'امتحان وټاکئ',
+        selectStudent: 'زده کوونکی وټاکئ',
+        uploadMarksheet: 'د نمرې پاڼه پورته کول',
+        scanWithCamera: 'د کیمرې سره سکین',
+        reviewExtracted: 'استخراج شوي ډاټا بیا کتل',
+        extractedRows: 'کرښې استخراج شوي',
+        written: 'تحریری',
+        oral: 'تقریری',
+        activity: 'فعالیت',
+        homework: 'کورنی کار',
+        sum: 'ټولټال',
+        gpa: 'اوسط',
+        cgpa: 'ټول اوسط',
+        promotion: 'ترفیع',
+        bookDistribution: 'د کتاب وېش',
+        smsAlert: 'پیغام',
+        pdfExport: 'PDF',
+        excelExport: 'Excel',
+        camera: 'کمره',
+        gallery: 'ګالری',
+        aiProcessing: 'د هوش مصنوعي لخوا پروسس کیږي...',
+        scanComplete: 'سکین بشپړ شو',
+        lowConfidence: 'ټیټ اعتماد - مهرباني وکړئ وګورئ',
+        noData: 'هیڅ معلومات نشته',
+        rank1: 'لومړی',
+        rank2: 'دویم',
+        rank3: 'دریم'
       }
     };
 
     let currentLang = localStorage.getItem('language') || 'dari';
-
-    function getText(key) { return t[currentLang][key] || key; }
-
-    function setLanguage(lang) {
-      currentLang = lang;
-      localStorage.setItem('language', lang);
-      renderApp();
-    }
+    function t(key) { return translations[currentLang][key] || key; }
+    function setLanguage(lang) { currentLang = lang; localStorage.setItem('language', lang); renderApp(); }
 
     // ==================== AUTH ====================
-    let currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || 'null');
-
+    let currentUser = JSON.parse(localStorage.getItem(STORAGE.CURRENT_USER) || 'null');
+    
     function login(email, password) {
-      const users = getData(STORAGE_KEYS.USERS);
+      const users = getData(STORAGE.USERS);
       const user = users.find(u => u.email === email && u.password === password);
       if (user) {
         currentUser = user;
-        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+        localStorage.setItem(STORAGE.CURRENT_USER, JSON.stringify(user));
         renderApp();
         return true;
       }
       return false;
     }
+    
+    function logout() { currentUser = null; localStorage.removeItem(STORAGE.CURRENT_USER); renderApp(); }
+    function isAdmin() { return currentUser?.role === 'admin'; }
+    function isTeacher() { return currentUser?.role === 'teacher'; }
 
-    function logout() {
-      currentUser = null;
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    // ==================== CRUD OPERATIONS ====================
+    function addStudent(data) { const items = getStudents(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.STUDENTS, items); renderApp(); }
+    function updateStudent(id, data) { let items = getStudents(); items = items.map(s => s.id === id ? { ...s, ...data } : s); saveData(STORAGE.STUDENTS, items); renderApp(); }
+    function deleteStudent(id) { saveData(STORAGE.STUDENTS, getStudents().filter(s => s.id !== id)); renderApp(); }
+    
+    function addClass(data) { const items = getClasses(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.CLASSES, items); renderApp(); }
+    function deleteClass(id) { saveData(STORAGE.CLASSES, getClasses().filter(c => c.id !== id)); renderApp(); }
+    
+    function addSubject(data) { const items = getSubjects(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.SUBJECTS, items); renderApp(); }
+    function deleteSubject(id) { saveData(STORAGE.SUBJECTS, getSubjects().filter(s => s.id !== id)); renderApp(); }
+    
+    function addExam(data) { const items = getExams(); items.push({ ...data, id: Date.now().toString() }); saveData(STORAGE.EXAMS, items); renderApp(); }
+    function deleteExam(id) { saveData(STORAGE.EXAMS, getExams().filter(e => e.id !== id)); renderApp(); }
+    
+    function saveResults(examId, results) {
+      let allResults = getResults();
+      allResults = allResults.filter(r => r.exam_id !== examId);
+      const newResults = Object.entries(results).map(([key, marks]) => {
+        const [studentId, subjectId] = key.split('_');
+        return { exam_id: examId, student_id: studentId, subject_id: subjectId, marks: Number(marks) || 0 };
+      });
+      saveData(STORAGE.RESULTS, [...allResults, ...newResults]);
       renderApp();
     }
 
-    // ==================== CRUD FUNCTIONS ====================
-    function getStudents() { return getData(STORAGE_KEYS.STUDENTS); }
-    function getClasses() { return getData(STORAGE_KEYS.CLASSES); }
-    function getSubjects() { return getData(STORAGE_KEYS.SUBJECTS); }
-    function getExams() { return getData(STORAGE_KEYS.EXAMS); }
-    function getResults() { return getData(STORAGE_KEYS.RESULTS); }
-
-    function addStudent(data) {
+    // ==================== CALCULATION ENGINE ====================
+    function calculateResults(examId) {
+      const results = getResults().filter(r => r.exam_id === examId);
       const students = getStudents();
-      const newStudent = { ...data, id: Date.now().toString() };
-      students.push(newStudent);
-      saveData(STORAGE_KEYS.STUDENTS, students);
-      renderApp();
-    }
-
-    function deleteStudent(id) {
-      let students = getStudents();
-      students = students.filter(s => s.id !== id);
-      saveData(STORAGE_KEYS.STUDENTS, students);
-      renderApp();
-    }
-
-    function addClass(data) {
-      const classes = getClasses();
-      const newClass = { ...data, id: Date.now().toString() };
-      classes.push(newClass);
-      saveData(STORAGE_KEYS.CLASSES, classes);
-      renderApp();
-    }
-
-    function deleteClass(id) {
-      let classes = getClasses();
-      classes = classes.filter(c => c.id !== id);
-      saveData(STORAGE_KEYS.CLASSES, classes);
-      renderApp();
-    }
-
-    function addSubject(data) {
       const subjects = getSubjects();
-      const newSubject = { ...data, id: Date.now().toString() };
-      subjects.push(newSubject);
-      saveData(STORAGE_KEYS.SUBJECTS, subjects);
-      renderApp();
+      const exam = getExams().find(e => e.id === examId);
+      
+      const classStudents = students.filter(s => s.class_id === exam?.class_id);
+      
+      return classStudents.map(student => {
+        let total = 0;
+        let totalFull = 0;
+        const subjectResults = {};
+        
+        subjects.forEach(subject => {
+          const result = results.find(r => r.student_id === student.id && r.subject_id === subject.id);
+          const marks = result?.marks || 0;
+          subjectResults[subject.id] = marks;
+          total += marks;
+          totalFull += subject.full_marks;
+        });
+        
+        const percentage = totalFull > 0 ? (total / totalFull) * 100 : 0;
+        const failedSubjects = subjects.filter(sub => {
+          const marks = subjectResults[sub.id] || 0;
+          return marks < (sub.pass_marks || 40);
+        }).length;
+        
+        let status = 'pass';
+        if (failedSubjects > 2) status = 'fail';
+        else if (failedSubjects > 0) status = 'conditional';
+        
+        return { student, total, percentage, status, subjects: subjectResults };
+      }).sort((a, b) => b.total - a.total).map((r, idx) => ({ ...r, rank: idx + 1 }));
     }
 
-    function deleteSubject(id) {
-      let subjects = getSubjects();
-      subjects = subjects.filter(s => s.id !== id);
-      saveData(STORAGE_KEYS.SUBJECTS, subjects);
-      renderApp();
+    // ==================== EXCEL EXPORT ====================
+    function exportToExcel(examId) {
+      const exam = getExams().find(e => e.id === examId);
+      const subjects = getSubjects();
+      const results = calculateResults(examId);
+      const XLSX = window.XLSX;
+      
+      const headers = [t('rollNumber'), t('fullName'), ...subjects.map(s => s.name), t('total'), t('percentage'), t('status'), t('rank')];
+      const rows = results.map(r => [
+        r.student.roll_number, r.student.full_name,
+        ...subjects.map(s => r.subjects[s.id] || ''),
+        r.total, r.percentage.toFixed(2) + '%', t(r.status), r.rank
+      ]);
+      
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Results');
+      XLSX.writeFile(wb, `${exam?.name}_results.xlsx`);
     }
 
-    function addExam(data) {
-      const exams = getExams();
-      const newExam = { ...data, id: Date.now().toString() };
-      exams.push(newExam);
-      saveData(STORAGE_KEYS.EXAMS, exams);
-      renderApp();
+    // ==================== AI OCR SCANNING ====================
+    async function scanMarksheet(imageDataUrl, subjectId, examId) {
+      const Tesseract = window.Tesseract;
+      const students = getStudents();
+      const exam = getExams().find(e => e.id === examId);
+      const classStudents = students.filter(s => s.class_id === exam?.class_id);
+      
+      try {
+        const result = await Tesseract.recognize(imageDataUrl, 'fas+eng', {
+          logger: m => console.log(m),
+          tessedit_pageseg_mode: 6
+        });
+        
+        const text = result.data.text;
+        const lines = text.split('\n');
+        const extracted = [];
+        
+        for (const line of lines) {
+          const numbers = line.match(/\d+/g);
+          if (numbers && numbers.length >= 2) {
+            const rollNumber = numbers[0];
+            const marks = parseInt(numbers[1]);
+            const student = classStudents.find(s => s.roll_number === rollNumber || s.roll_number.toString() === rollNumber);
+            if (student && marks <= 100) {
+              extracted.push({ student_id: student.id, roll_number: student.roll_number, marks });
+            }
+          }
+        }
+        
+        return { success: true, extracted, text };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     }
 
-    function deleteExam(id) {
-      let exams = getExams();
-      exams = exams.filter(e => e.id !== id);
-      saveData(STORAGE_KEYS.EXAMS, exams);
-      renderApp();
-    }
-
-    function saveResults(results) {
-      saveData(STORAGE_KEYS.RESULTS, results);
-      renderApp();
+    // ==================== PDF EXPORT ====================
+    function exportToPDF(examId) {
+      const { jsPDF } = window.jspdf;
+      const exam = getExams().find(e => e.id === examId);
+      const subjects = getSubjects();
+      const results = calculateResults(examId);
+      
+      const doc = new jsPDF({ direction: 'rtl' });
+      doc.setFont('Vazirmatn');
+      doc.setFontSize(18);
+      doc.text(t('results') + ': ' + (currentLang === 'dari' ? exam?.name : exam?.name_pashto), 105, 15, { align: 'center' });
+      
+      const tableData = results.map(r => [
+        r.student.roll_number, r.student.full_name,
+        r.total.toString(), r.percentage.toFixed(1) + '%', t(r.status), r.rank.toString()
+      ]);
+      
+      doc.autoTable({
+        head: [[t('rollNumber'), t('fullName'), t('total'), t('percentage'), t('status'), t('rank')]],
+        body: tableData,
+        startY: 25,
+        styles: { font: 'Vazirmatn', fontSize: 8 },
+        headStyles: { fillColor: [5, 150, 105] }
+      });
+      
+      doc.save(`${exam?.name}_results.pdf`);
     }
 
     // ==================== REACT COMPONENTS ====================
@@ -269,62 +496,95 @@
       const [email, setEmail] = React.useState('');
       const [password, setPassword] = React.useState('');
       const [error, setError] = React.useState('');
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        if (login(email, password)) {
-          setError('');
-        } else {
-          setError(getText('login') + ' ' + getText('failed'));
-        }
-      };
-
+      
       return React.createElement('div', { className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 p-4" },
-        React.createElement('div', { className: "bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" },
-          React.createElement('h1', { className: "text-3xl font-bold text-center text-emerald-700 mb-2" }, getText('appName')),
-          React.createElement('p', { className: "text-center text-gray-500 mb-8" }, getText('welcome')),
-          React.createElement('form', { onSubmit: handleSubmit, className: "space-y-4" },
-            React.createElement('input', { type: "email", placeholder: getText('email'), value: email, onChange: (e) => setEmail(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
-            React.createElement('input', { type: "password", placeholder: getText('password'), value: password, onChange: (e) => setPassword(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
-            error && React.createElement('p', { className: "text-red-500 text-sm text-center" }, error),
-            React.createElement('button', { type: "submit", className: "w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition" }, getText('login')),
-            React.createElement('p', { className: "text-center text-sm text-gray-500 mt-4" }, "Demo: admin@school.com / admin123")
+        React.createElement('div', { className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full" },
+          React.createElement('div', { className: "text-center mb-8" },
+            React.createElement('div', { className: "text-6xl mb-3" }, "🎓"),
+            React.createElement('h1', { className: "text-3xl font-bold text-emerald-700" }, t('appName')),
+            React.createElement('p', { className: "text-gray-500 mt-1" }, t('appSubtitle'))
           ),
-          React.createElement('div', { className: "mt-6 flex justify-center gap-2" },
-            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-3 py-1 rounded ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "دری"),
-            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-3 py-1 rounded ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "پښتو")
+          React.createElement('form', { onSubmit: (e) => { e.preventDefault(); if(login(email, password)) setError(''); else setError(t('errorOccurred')); }, className: "space-y-4" },
+            React.createElement('input', { type: "email", placeholder: t('email'), value: email, onChange: (e) => setEmail(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
+            React.createElement('input', { type: "password", placeholder: t('password'), value: password, onChange: (e) => setPassword(e.target.value), className: "w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500", required: true }),
+            error && React.createElement('p', { className: "text-red-500 text-sm text-center" }, error),
+            React.createElement('button', { type: "submit", className: "w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition" }, t('login'))
+          ),
+          React.createElement('div', { className: "mt-6 pt-4 border-t text-center text-sm text-gray-500" },
+            React.createElement('p', null, "Demo: admin@school.com / admin123")
+          ),
+          React.createElement('div', { className: "mt-4 flex justify-center gap-3" },
+            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-4 py-2 rounded-lg font-semibold transition ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'}` }, "دری"),
+            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-4 py-2 rounded-lg font-semibold transition ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-700'} font-pashto` }, "پښتو")
           )
         )
       );
     }
 
-    function Dashboard() {
+    function DashboardPage({ setPage }) {
       const students = getStudents();
       const classes = getClasses();
       const subjects = getSubjects();
       const exams = getExams();
-
+      
       const stats = [
-        { label: getText('totalStudents'), value: students.length, color: 'bg-blue-500' },
-        { label: getText('totalClasses'), value: classes.length, color: 'bg-emerald-500' },
-        { label: getText('totalSubjects'), value: subjects.length, color: 'bg-purple-500' },
-        { label: getText('totalExams'), value: exams.length, color: 'bg-orange-500' }
+        { icon: '👨‍🎓', label: t('totalStudents'), value: students.length, color: 'bg-blue-500', page: 'students' },
+        { icon: '🏫', label: t('totalClasses'), value: classes.length, color: 'bg-emerald-500', page: 'classes' },
+        { icon: '📚', label: t('totalSubjects'), value: subjects.length, color: 'bg-purple-500', page: 'subjects' },
+        { icon: '📝', label: t('totalExams'), value: exams.length, color: 'bg-orange-500', page: 'exams' }
       ];
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('h1', { className: "text-2xl font-bold mb-2" }, getText('dashboard')),
-        React.createElement('p', { className: "text-gray-500 mb-6" }, `${getText('welcome')}, ${currentUser?.full_name || 'User'}`),
-        React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-8" },
-          stats.map((stat, i) => React.createElement('div', { key: i, className: "bg-white rounded-xl shadow-md p-4 text-center" },
-            React.createElement('div', { className: `${stat.color} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-white text-xl font-bold` }, stat.value),
-            React.createElement('p', { className: "text-gray-600 text-sm" }, stat.label)
+      
+      const quickActions = [
+        { icon: '👨‍🎓', label: t('students'), page: 'students', color: 'bg-blue-100 text-blue-700' },
+        { icon: '🏫', label: t('classes'), page: 'classes', color: 'bg-emerald-100 text-emerald-700' },
+        { icon: '📚', label: t('subjects'), page: 'subjects', color: 'bg-purple-100 text-purple-700' },
+        { icon: '📝', label: t('exams'), page: 'exams', color: 'bg-orange-100 text-orange-700' },
+        { icon: '📊', label: t('results'), page: 'results', color: 'bg-teal-100 text-teal-700' },
+        { icon: '🤖', label: t('scan'), page: 'scan', color: 'bg-indigo-100 text-indigo-700' }
+      ];
+      
+      const recentExams = exams.slice(-3);
+      
+      return React.createElement('div', { className: "p-4 space-y-6" },
+        React.createElement('div', { className: "flex justify-between items-center" },
+          React.createElement('div', null,
+            React.createElement('h1', { className: "text-2xl font-bold" }, t('dashboard')),
+            React.createElement('p', { className: "text-gray-500 text-sm mt-1" }, `${t('welcome')}, ${currentLang === 'dari' ? currentUser?.full_name : currentUser?.full_name_pashto}`)
+          ),
+          React.createElement('div', { className: "flex gap-2" },
+            React.createElement('button', { onClick: () => setLanguage('dari'), className: `px-2 py-1 text-sm rounded ${currentLang === 'dari' ? 'bg-emerald-600 text-white' : 'bg-gray-200'}` }, "دری"),
+            React.createElement('button', { onClick: () => setLanguage('pashto'), className: `px-2 py-1 text-sm rounded ${currentLang === 'pashto' ? 'bg-emerald-600 text-white' : 'bg-gray-200'} font-pashto` }, "پښتو")
+          )
+        ),
+        
+        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+          stats.map(stat => React.createElement('button', { key: stat.label, onClick: () => setPage(stat.page), className: "bg-white rounded-xl shadow-md p-4 text-center card-hover transition-all" },
+            React.createElement('div', { className: `w-12 h-12 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-2 text-white text-xl` }, stat.icon),
+            React.createElement('div', { className: "text-2xl font-bold" }, stat.value),
+            React.createElement('div', { className: "text-xs text-gray-500" }, stat.label)
           ))
         ),
-        React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-          ['students', 'classes', 'subjects', 'exams', 'results', 'scan'].map(page => 
-            React.createElement('button', { key: page, onClick: () => setCurrentPage(page), className: "bg-white border rounded-xl p-4 text-center shadow-sm hover:shadow-md transition" },
-              React.createElement('span', { className: "font-semibold" }, getText(page))
-            )
+        
+        React.createElement('div', null,
+          React.createElement('h2', { className: "text-lg font-semibold mb-3" }, "دسترسی سریع"),
+          React.createElement('div', { className: "grid grid-cols-3 gap-2" },
+            quickActions.map(action => React.createElement('button', { key: action.label, onClick: () => setPage(action.page), className: `${action.color} rounded-xl p-3 text-center card-hover transition-all` },
+              React.createElement('div', { className: "text-xl mb-1" }, action.icon),
+              React.createElement('div', { className: "text-xs font-medium" }, action.label)
+            ))
+          )
+        ),
+        
+        recentExams.length > 0 && React.createElement('div', null,
+          React.createElement('h2', { className: "text-lg font-semibold mb-3" }, t('exams')),
+          React.createElement('div', { className: "space-y-2" },
+            recentExams.map(exam => React.createElement('div', { key: exam.id, className: "bg-white rounded-xl shadow-md p-3 flex justify-between items-center" },
+              React.createElement('div', null,
+                React.createElement('p', { className: "font-semibold" }, currentLang === 'dari' ? exam.name : exam.name_pashto),
+                React.createElement('p', { className: "text-xs text-gray-500" }, `${t('selectClass')}: ${getClasses().find(c => c.id === exam.class_id)?.name}`)
+              ),
+              React.createElement('button', { onClick: () => setPage('results'), className: "bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm" }, t('results'))
+            ))
           )
         )
       );
@@ -332,42 +592,54 @@
 
     function StudentsPage() {
       const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ roll_number: '', full_name: '', father_name: '', class_id: '', academic_year: '1405' });
+      const [editingId, setEditingId] = React.useState(null);
+      const [form, setForm] = React.useState({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' });
       const students = getStudents();
       const classes = getClasses();
-
+      
       const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
-
-      const handleAdd = () => {
-        if (form.roll_number && form.full_name) {
-          addStudent(form);
-          setForm({ roll_number: '', full_name: '', father_name: '', class_id: '', academic_year: '1405' });
-          setShowForm(false);
-        }
+      const handleSave = () => {
+        if (editingId) updateStudent(editingId, form);
+        else addStudent(form);
+        setShowForm(false); setEditingId(null);
+        setForm({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' });
       };
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('div', { className: "flex justify-between items-center mb-4" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, getText('students')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, showForm ? getText('cancel') : `+ ${getText('add')}`)
+      const handleEdit = (student) => { setForm(student); setEditingId(student.id); setShowForm(true); };
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('div', { className: "flex justify-between items-center" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, t('students')),
+          React.createElement('button', { onClick: () => { setShowForm(true); setEditingId(null); setForm({ roll_number: '', full_name: '', father_name: '', phone: '', class_id: '', academic_year: '1405' }); }, className: "bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center gap-1" }, "+ ", t('add'))
         ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
-          React.createElement('input', { placeholder: getText('rollNumber'), value: form.roll_number, onChange: (e) => setForm({...form, roll_number: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('input', { placeholder: getText('fullName'), value: form.full_name, onChange: (e) => setForm({...form, full_name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('input', { placeholder: getText('fatherName'), value: form.father_name, onChange: (e) => setForm({...form, father_name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded mb-2" },
-            React.createElement('option', { value: "" }, getText('selectClass')),
+        
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('input', { placeholder: t('rollNumber'), value: form.roll_number, onChange: (e) => setForm({...form, roll_number: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('fullName'), value: form.full_name, onChange: (e) => setForm({...form, full_name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('fatherName'), value: form.father_name, onChange: (e) => setForm({...form, father_name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('phone'), value: form.phone, onChange: (e) => setForm({...form, phone: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded-lg" },
+            React.createElement('option', { value: "" }, t('selectClass')),
             classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
           ),
-          React.createElement('button', { onClick: handleAdd, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+          React.createElement('div', { className: "flex gap-2" },
+            React.createElement('button', { onClick: handleSave, className: "flex-1 bg-emerald-600 text-white py-2 rounded-lg" }, t('save')),
+            React.createElement('button', { onClick: () => { setShowForm(false); setEditingId(null); }, className: "flex-1 bg-gray-300 py-2 rounded-lg" }, t('cancel'))
+          )
         ),
+        
         React.createElement('div', { className: "space-y-2" },
-          students.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4 flex justify-between items-center" },
-            React.createElement('div', null,
-              React.createElement('p', { className: "font-bold" }, s.full_name),
-              React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('rollNumber')}: ${s.roll_number} | ${getText('class')}: ${getClassName(s.class_id)}`)
-            ),
-            React.createElement('button', { onClick: () => deleteStudent(s.id), className: "text-red-500" }, "🗑️")
+          students.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4" },
+            React.createElement('div', { className: "flex justify-between items-start" },
+              React.createElement('div', null,
+                React.createElement('p', { className: "font-bold text-lg" }, s.full_name),
+                React.createElement('p', { className: "text-sm text-gray-500" }, `${t('rollNumber')}: ${s.roll_number} | ${t('class')}: ${getClassName(s.class_id)}`),
+                s.phone && React.createElement('p', { className: "text-xs text-gray-400" }, `${t('phone')}: ${s.phone}`)
+              ),
+              React.createElement('div', { className: "flex gap-1" },
+                React.createElement('button', { onClick: () => handleEdit(s), className: "text-blue-500 p-1" }, "✏️"),
+                React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteStudent(s.id); }, className: "text-red-500 p-1" }, "🗑️")
+              )
+            )
           ))
         )
       );
@@ -375,22 +647,23 @@
 
     function ClassesPage() {
       const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', grade_level: '', academic_year: '1405' });
+      const [form, setForm] = React.useState({ name: '', name_pashto: '', grade_level: '', academic_year: '1405' });
       const classes = getClasses();
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('div', { className: "flex justify-between items-center mb-4" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, getText('classes')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('div', { className: "flex justify-between items-center" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, t('classes')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
         ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
-          React.createElement('input', { placeholder: getText('className'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('button', { onClick: () => { addClass(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('input', { placeholder: t('className') + " (دری)", value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('className') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
+          React.createElement('button', { onClick: () => { addClass(form); setShowForm(false); setForm({ name: '', name_pashto: '', grade_level: '', academic_year: '1405' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
         ),
         React.createElement('div', { className: "grid grid-cols-2 gap-3" },
           classes.map(c => React.createElement('div', { key: c.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('p', { className: "font-bold" }, c.name),
-            React.createElement('button', { onClick: () => deleteClass(c.id), className: "text-red-500 text-sm mt-2" }, getText('delete'))
+            React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? c.name : (c.name_pashto || c.name)),
+            React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteClass(c.id); }, className: "text-red-500 text-sm mt-2" }, t('delete'))
           ))
         )
       );
@@ -398,23 +671,28 @@
 
     function SubjectsPage() {
       const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', full_marks: '100' });
+      const [form, setForm] = React.useState({ name: '', name_pashto: '', full_marks: '100', pass_marks: '40' });
       const subjects = getSubjects();
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('div', { className: "flex justify-between items-center mb-4" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, getText('subjects')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('div', { className: "flex justify-between items-center" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, t('subjects')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
         ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
-          React.createElement('input', { placeholder: getText('subjectName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('button', { onClick: () => { addSubject(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('input', { placeholder: t('subjectName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('subjectName') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
+          React.createElement('div', { className: "grid grid-cols-2 gap-2" },
+            React.createElement('input', { type: "number", placeholder: t('fullMarks'), value: form.full_marks, onChange: (e) => setForm({...form, full_marks: e.target.value}), className: "p-2 border rounded-lg" }),
+            React.createElement('input', { type: "number", placeholder: t('passMarks'), value: form.pass_marks, onChange: (e) => setForm({...form, pass_marks: e.target.value}), className: "p-2 border rounded-lg" })
+          ),
+          React.createElement('button', { onClick: () => { addSubject(form); setShowForm(false); setForm({ name: '', name_pashto: '', full_marks: '100', pass_marks: '40' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
         ),
         React.createElement('div', { className: "grid grid-cols-2 gap-3" },
           subjects.map(s => React.createElement('div', { key: s.id, className: "bg-white rounded-xl shadow-md p-4" },
-            React.createElement('p', { className: "font-bold" }, s.name),
-            React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('fullMarks')}: ${s.full_marks}`),
-            React.createElement('button', { onClick: () => deleteSubject(s.id), className: "text-red-500 text-sm mt-2" }, getText('delete'))
+            React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name)),
+            React.createElement('p', { className: "text-sm text-gray-500" }, `${t('fullMarks')}: ${s.full_marks} | ${t('passMarks')}: ${s.pass_marks}`),
+            React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteSubject(s.id); }, className: "text-red-500 text-sm mt-2" }, t('delete'))
           ))
         )
       );
@@ -422,98 +700,120 @@
 
     function ExamsPage() {
       const [showForm, setShowForm] = React.useState(false);
-      const [form, setForm] = React.useState({ name: '', class_id: '', academic_year: '1405' });
+      const [form, setForm] = React.useState({ name: '', name_pashto: '', class_id: '', academic_year: '1405', exam_date: '' });
       const exams = getExams();
       const classes = getClasses();
-
       const getClassName = (id) => classes.find(c => c.id === id)?.name || '-';
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('div', { className: "flex justify-between items-center mb-4" },
-          React.createElement('h1', { className: "text-2xl font-bold" }, getText('exams')),
-          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${getText('add')}`)
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('div', { className: "flex justify-between items-center" },
+          React.createElement('h1', { className: "text-2xl font-bold" }, t('exams')),
+          React.createElement('button', { onClick: () => setShowForm(!showForm), className: "bg-emerald-600 text-white px-4 py-2 rounded-lg" }, `+ ${t('add')}`)
         ),
-        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
-          React.createElement('input', { placeholder: getText('examName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded mb-2" }),
-          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded mb-2" },
-            React.createElement('option', { value: "" }, getText('selectClass')),
+        showForm && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('input', { placeholder: t('examName'), value: form.name, onChange: (e) => setForm({...form, name: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('input', { placeholder: t('examName') + " (پښتو)", value: form.name_pashto, onChange: (e) => setForm({...form, name_pashto: e.target.value}), className: "w-full p-2 border rounded-lg font-pashto" }),
+          React.createElement('select', { value: form.class_id, onChange: (e) => setForm({...form, class_id: e.target.value}), className: "w-full p-2 border rounded-lg" },
+            React.createElement('option', { value: "" }, t('selectClass')),
             classes.map(c => React.createElement('option', { key: c.id, value: c.id }, c.name))
           ),
-          React.createElement('button', { onClick: () => { addExam(form); setShowForm(false); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('save'))
+          React.createElement('input', { type: "date", placeholder: t('examDate'), value: form.exam_date, onChange: (e) => setForm({...form, exam_date: e.target.value}), className: "w-full p-2 border rounded-lg" }),
+          React.createElement('button', { onClick: () => { addExam(form); setShowForm(false); setForm({ name: '', name_pashto: '', class_id: '', academic_year: '1405', exam_date: '' }); }, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
         ),
         React.createElement('div', { className: "space-y-2" },
-          exams.map(e => React.createElement('div', { key: e.id, className: "bg-white rounded-xl shadow-md p-4 flex justify-between items-center" },
-            React.createElement('div', null,
-              React.createElement('p', { className: "font-bold" }, e.name),
-              React.createElement('p', { className: "text-sm text-gray-500" }, `${getText('class')}: ${getClassName(e.class_id)}`)
-            ),
-            React.createElement('button', { onClick: () => deleteExam(e.id), className: "text-red-500" }, "🗑️")
+          exams.map(e => React.createElement('div', { key: e.id, className: "bg-white rounded-xl shadow-md p-4" },
+            React.createElement('div', { className: "flex justify-between items-center" },
+              React.createElement('div', null,
+                React.createElement('p', { className: "font-bold" }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)),
+                React.createElement('p', { className: "text-sm text-gray-500" }, `${t('class')}: ${getClassName(e.class_id)} | ${t('academicYear')}: ${e.academic_year}`)
+              ),
+              React.createElement('button', { onClick: () => { if(confirm(t('confirmDelete'))) deleteExam(e.id); }, className: "text-red-500" }, "🗑️")
+            )
           ))
         )
       );
     }
 
     function ResultsPage() {
+      const [selectedExam, setSelectedExam] = React.useState('');
       const [marks, setMarks] = React.useState({});
       const exams = getExams();
-      const students = getStudents();
       const subjects = getSubjects();
-
-      const exportExcel = () => {
-        const XLSX = window.XLSX;
-        const wsData = [['نمبر رول', 'نام', ...subjects.map(s => s.name), 'مجموع']];
-        students.forEach(s => {
-          const row = [s.roll_number, s.full_name];
-          let total = 0;
-          subjects.forEach(sub => {
-            const mark = marks[`${s.id}_${sub.id}`] || '';
-            row.push(mark);
-            total += Number(mark) || 0;
-          });
-          row.push(total);
-          wsData.push(row);
-        });
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'نتایج');
-        XLSX.writeFile(wb, `نتایج_امتحان.xlsx`);
-      };
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('h1', { className: "text-2xl font-bold mb-4" }, getText('results')),
-        React.createElement('button', { onClick: exportExcel, className: "bg-emerald-600 text-white px-4 py-2 rounded-lg mb-4" }, "Excel"),
-        React.createElement('div', { className: "overflow-x-auto" },
-          React.createElement('table', { className: "w-full bg-white rounded-xl shadow-md" },
-            React.createElement('thead', { className: "bg-gray-100" },
-              React.createElement('tr', null,
-                React.createElement('th', { className: "p-2 text-right" }, getText('rollNumber')),
-                React.createElement('th', { className: "p-2 text-right" }, getText('fullName')),
-                subjects.map(s => React.createElement('th', { key: s.id, className: "p-2 text-center" }, s.name)),
-                React.createElement('th', { className: "p-2 text-center" }, getText('total'))
-              )
-            ),
-            React.createElement('tbody', null,
-              students.map(s => React.createElement('tr', { key: s.id, className: "border-t" },
-                React.createElement('td', { className: "p-2" }, s.roll_number),
-                React.createElement('td', { className: "p-2" }, s.full_name),
-                subjects.map(sub => React.createElement('td', { key: sub.id, className: "p-1" },
-                  React.createElement('input', { type: "number", className: "w-16 p-1 border rounded text-center", value: marks[`${s.id}_${sub.id}`] || '', onChange: (e) => setMarks({...marks, [`${s.id}_${sub.id}`]: e.target.value}) })
-                )),
-                React.createElement('td', { className: "p-2 text-center font-bold" }, 
-                  subjects.reduce((sum, sub) => sum + (Number(marks[`${s.id}_${sub.id}`]) || 0), 0)
-                )
-              ))
-            )
-          )
+      const students = getStudents();
+      
+      const exam = exams.find(e => e.id === selectedExam);
+      const classStudents = students.filter(s => s.class_id === exam?.class_id);
+      const existingResults = getResults().filter(r => r.exam_id === selectedExam);
+      
+      React.useEffect(() => {
+        if (existingResults.length > 0) {
+          const loadedMarks = {};
+          existingResults.forEach(r => { loadedMarks[`${r.student_id}_${r.subject_id}`] = r.marks; });
+          setMarks(loadedMarks);
+        }
+      }, [selectedExam]);
+      
+      const calculatedResults = selectedExam ? calculateResults(selectedExam) : [];
+      const handleSave = () => { saveResults(selectedExam, marks); alert(t('saveSuccess')); };
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('h1', { className: "text-2xl font-bold" }, t('results')),
+        
+        React.createElement('select', { value: selectedExam, onChange: (e) => setSelectedExam(e.target.value), className: "w-full p-3 border rounded-xl bg-white" },
+          React.createElement('option', { value: "" }, t('selectExam')),
+          exams.map(e => React.createElement('option', { key: e.id, value: e.id }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)))
         ),
-        React.createElement('button', { onClick: () => saveResults(marks), className: "w-full bg-emerald-600 text-white py-2 rounded-lg mt-4" }, getText('save'))
+        
+        selectedExam && React.createElement(React.Fragment, null,
+          React.createElement('div', { className: "flex gap-2" },
+            React.createElement('button', { onClick: () => exportToExcel(selectedExam), className: "flex-1 bg-green-600 text-white py-2 rounded-lg" }, "📊 " + t('excelExport')),
+            React.createElement('button', { onClick: () => exportToPDF(selectedExam), className: "flex-1 bg-red-600 text-white py-2 rounded-lg" }, "📄 " + t('pdfExport'))
+          ),
+          
+          React.createElement('div', { className: "overflow-x-auto" },
+            React.createElement('table', { className: "w-full bg-white rounded-xl shadow-md" },
+              React.createElement('thead', { className: "bg-gray-100" },
+                React.createElement('tr', null,
+                  React.createElement('th', { className: "p-2 text-right" }, t('rollNumber')),
+                  React.createElement('th', { className: "p-2 text-right" }, t('fullName')),
+                  subjects.map(s => React.createElement('th', { key: s.id, className: "p-2 text-center" }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name))),
+                  React.createElement('th', { className: "p-2 text-center" }, t('total')),
+                  React.createElement('th', { className: "p-2 text-center" }, t('percentage')),
+                  React.createElement('th', { className: "p-2 text-center" }, t('status'))
+                )
+              ),
+              React.createElement('tbody', null,
+                classStudents.map(student => {
+                  const result = calculatedResults.find(r => r.student.id === student.id);
+                  return React.createElement('tr', { key: student.id, className: "border-t" },
+                    React.createElement('td', { className: "p-2" }, student.roll_number),
+                    React.createElement('td', { className: "p-2" }, student.full_name),
+                    subjects.map(sub => React.createElement('td', { key: sub.id, className: "p-1" },
+                      React.createElement('input', { type: "number", className: "w-16 p-1 border rounded text-center", value: marks[`${student.id}_${sub.id}`] || '', onChange: (e) => setMarks({...marks, [`${student.id}_${sub.id}`]: e.target.value}) })
+                    )),
+                    React.createElement('td', { className: "p-2 text-center font-bold" }, result?.total || 0),
+                    React.createElement('td', { className: "p-2 text-center" }, result?.percentage.toFixed(1) + '%'),
+                    React.createElement('td', { className: `p-2 text-center font-semibold ${result?.status === 'pass' ? 'text-green-600' : result?.status === 'conditional' ? 'text-yellow-600' : 'text-red-600'}` }, t(result?.status))
+                  );
+                })
+              )
+            )
+          ),
+          
+          React.createElement('button', { onClick: handleSave, className: "w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold" }, t('saveAll'))
+        )
       );
     }
 
     function ScanPage() {
       const [image, setImage] = React.useState(null);
+      const [scanning, setScanning] = React.useState(false);
       const [extracted, setExtracted] = React.useState([]);
-
+      const [selectedExam, setSelectedExam] = React.useState('');
+      const [selectedSubject, setSelectedSubject] = React.useState('');
+      const exams = getExams();
+      const subjects = getSubjects();
+      
       const handleImage = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -522,69 +822,114 @@
           reader.readAsDataURL(file);
         }
       };
-
-      const runOCR = () => {
-        setTimeout(() => {
-          setExtracted([
-            { roll_number: '001', written: 18, oral: 17, total: 35 },
-            { roll_number: '002', written: 16, oral: 19, total: 35 }
-          ]);
-          alert('اسکن تکمیل شد! ' + extracted.length + ' نمره استخراج شد');
-        }, 1000);
+      
+      const runScan = async () => {
+        if (!image || !selectedExam || !selectedSubject) { alert('لطفاً امتحان و مضمون را انتخاب کنید'); return; }
+        setScanning(true);
+        const result = await scanMarksheet(image, selectedSubject, selectedExam);
+        if (result.success) {
+          setExtracted(result.extracted);
+          alert(`${result.extracted.length} ${t('extractedRows')}`);
+        } else {
+          alert(t('errorOccurred') + ': ' + result.error);
+        }
+        setScanning(false);
       };
-
-      return React.createElement('div', { className: "p-4" },
-        React.createElement('h1', { className: "text-2xl font-bold mb-4" }, getText('scan')),
-        React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 mb-4" },
-          React.createElement('input', { type: "file", accept: "image/*", capture: "environment", onChange: handleImage, className: "w-full mb-3" }),
-          image && React.createElement('img', { src: image, className: "rounded-lg max-h-48 mx-auto mb-3", alt: "preview" }),
-          React.createElement('button', { onClick: runOCR, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, getText('scanWithCamera'))
+      
+      const saveScanned = () => {
+        const newMarks = {};
+        extracted.forEach(item => {
+          newMarks[`${item.student_id}_${selectedSubject}`] = item.marks;
+        });
+        const existing = getResults().filter(r => r.exam_id === selectedExam);
+        const allMarks = {};
+        existing.forEach(r => { allMarks[`${r.student_id}_${r.subject_id}`] = r.marks; });
+        Object.assign(allMarks, newMarks);
+        saveResults(selectedExam, allMarks);
+        alert(t('saveSuccess'));
+        setExtracted([]);
+        setImage(null);
+      };
+      
+      return React.createElement('div', { className: "p-4 space-y-4" },
+        React.createElement('h1', { className: "text-2xl font-bold flex items-center gap-2" }, "🤖 ", t('scan')),
+        
+        React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('select', { value: selectedExam, onChange: (e) => setSelectedExam(e.target.value), className: "w-full p-2 border rounded-lg" },
+            React.createElement('option', { value: "" }, t('selectExam')),
+            exams.map(e => React.createElement('option', { key: e.id, value: e.id }, currentLang === 'dari' ? e.name : (e.name_pashto || e.name)))
+          ),
+          React.createElement('select', { value: selectedSubject, onChange: (e) => setSelectedSubject(e.target.value), className: "w-full p-2 border rounded-lg" },
+            React.createElement('option', { value: "" }, t('selectSubject')),
+            subjects.map(s => React.createElement('option', { key: s.id, value: s.id }, currentLang === 'dari' ? s.name : (s.name_pashto || s.name)))
+          ),
+          React.createElement('input', { type: "file", accept: "image/*", capture: "environment", onChange: handleImage, className: "w-full" }),
+          image && React.createElement('img', { src: image, className: "rounded-lg max-h-48 mx-auto", alt: "preview" }),
+          React.createElement('button', { onClick: runScan, disabled: scanning, className: `w-full py-2 rounded-lg ${scanning ? 'bg-gray-400' : 'bg-indigo-600 text-white'}` }, scanning ? t('processing') : t('scanWithCamera'))
+        ),
+        
+        extracted.length > 0 && React.createElement('div', { className: "bg-white rounded-xl shadow-md p-4 space-y-3" },
+          React.createElement('h2', { className: "font-bold" }, t('reviewExtracted')),
+          React.createElement('div', { className: "space-y-2" },
+            extracted.map((item, i) => React.createElement('div', { key: i, className: "flex justify-between items-center p-2 bg-gray-50 rounded" },
+              React.createElement('span', null, `${t('rollNumber')}: ${item.roll_number}`),
+              React.createElement('input', { type: "number", value: item.marks, onChange: (e) => { const newExtracted = [...extracted]; newExtracted[i].marks = e.target.value; setExtracted(newExtracted); }, className: "w-20 p-1 border rounded text-center" })
+            ))
+          ),
+          React.createElement('button', { onClick: saveScanned, className: "w-full bg-emerald-600 text-white py-2 rounded-lg" }, t('save'))
         )
       );
     }
 
-    // ==================== APP ====================
-    let [currentPage, setCurrentPage] = React.useState('dashboard');
-    window.setCurrentPage = setCurrentPage;
-
     function App() {
+      const [currentPage, setCurrentPage] = React.useState('dashboard');
       if (!currentUser) return LoginPage();
       
       const pages = {
-        dashboard: Dashboard(),
-        students: StudentsPage(),
-        classes: ClassesPage(),
-        subjects: SubjectsPage(),
-        exams: ExamsPage(),
-        results: ResultsPage(),
-        scan: ScanPage()
+        dashboard: React.createElement(DashboardPage, { setPage: setCurrentPage }),
+        students: React.createElement(StudentsPage, null),
+        classes: React.createElement(ClassesPage, null),
+        subjects: React.createElement(SubjectsPage, null),
+        exams: React.createElement(ExamsPage, null),
+        results: React.createElement(ResultsPage, null),
+        scan: React.createElement(ScanPage, null)
       };
-
-      const menuItems = ['dashboard', 'students', 'classes', 'subjects', 'exams', 'results', 'scan'];
-
+      
+      const menu = [
+        { id: 'dashboard', icon: '📊', label: t('dashboard') },
+        { id: 'students', icon: '👨‍🎓', label: t('students') },
+        { id: 'classes', icon: '🏫', label: t('classes') },
+        { id: 'subjects', icon: '📚', label: t('subjects') },
+        { id: 'exams', icon: '📝', label: t('exams') },
+        { id: 'results', icon: '📊', label: t('results') },
+        { id: 'scan', icon: '🤖', label: t('scan') }
+      ];
+      
       return React.createElement('div', { className: "min-h-screen bg-gray-50 pb-20" },
-        React.createElement('div', { className: "bg-emerald-600 text-white p-4 shadow-lg" },
-          React.createElement('div', { className: "flex justify-between items-center" },
-            React.createElement('h1', { className: "text-xl font-bold" }, getText('appName')),
+        React.createElement('div', { className: "bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-10" },
+          React.createElement('div', { className: "flex justify-between items-center max-w-md mx-auto" },
+            React.createElement('div', null,
+              React.createElement('h1', { className: "text-lg font-bold" }, t('appName')),
+              React.createElement('p', { className: "text-xs opacity-80" }, t('appSubtitle'))
+            ),
             React.createElement('div', { className: "flex gap-2" },
-              React.createElement('button', { onClick: () => setLanguage('dari'), className: "px-2 py-1 text-sm bg-emerald-700 rounded" }, "دری"),
-              React.createElement('button', { onClick: () => setLanguage('pashto'), className: "px-2 py-1 text-sm bg-emerald-700 rounded" }, "پښتو"),
-              React.createElement('button', { onClick: logout, className: "px-3 py-1 bg-emerald-700 rounded" }, getText('logout'))
+              React.createElement('button', { onClick: () => setLanguage('dari'), className: "px-2 py-1 text-xs rounded bg-emerald-700" }, "دری"),
+              React.createElement('button', { onClick: () => setLanguage('pashto'), className: "px-2 py-1 text-xs rounded bg-emerald-700 font-pashto" }, "پښتو"),
+              React.createElement('button', { onClick: logout, className: "px-3 py-1 text-sm rounded bg-emerald-700" }, t('logout'))
             )
           )
         ),
         React.createElement('div', { className: "max-w-md mx-auto" }, pages[currentPage]),
-        React.createElement('div', { className: "fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg flex justify-around p-2 max-w-md mx-auto" },
-          menuItems.map(item => React.createElement('button', { key: item, onClick: () => setCurrentPage(item), className: `p-2 rounded-lg text-sm ${currentPage === item ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500'}` }, getText(item)))
+        React.createElement('div', { className: "fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg flex justify-around p-2 max-w-md mx-auto z-10" },
+          menu.map(item => React.createElement('button', { key: item.id, onClick: () => setCurrentPage(item.id), className: `p-2 rounded-lg text-center transition ${currentPage === item.id ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500'}` },
+            React.createElement('div', { className: "text-xl" }, item.icon),
+            React.createElement('div', { className: "text-xs" }, item.label)
+          ))
         )
       );
     }
-
-    function renderApp() {
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(React.createElement(App));
-    }
-
+    
+    function renderApp() { const root = ReactDOM.createRoot(document.getElementById('root')); root.render(React.createElement(App)); }
     renderApp();
   </script>
 </body>
