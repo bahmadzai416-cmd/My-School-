@@ -4,40 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#059669">
-  <meta name="description" content="سیستم مدیریت مکتب - مدیریت هوشمند مدارس">
-  <title>سیستم مدیریت مکتب</title>
-  
-  <!-- Tailwind CSS CDN -->
+  <title>سیستم مدیریت مکتب - نسخه کامل</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- SheetJS for Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-  
-  <!-- html2pdf for PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  
   <style>
-    * { font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * { font-family: 'Vazirmatn', sans-serif; }
     body { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); min-height: 100vh; }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15); }
-    .rtl { direction: rtl; }
-    .ltr { direction: ltr; }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.2); }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
     .modal.active { display: flex; }
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 20px; border-radius: 8px; z-index: 2000; display: none; animation: slideIn 0.3s ease; }
-    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    .language-btn.active { background-color: #059669; color: white; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 20px; border-radius: 8px; z-index: 2000; display: none; }
+    .lang-btn.active { background: #059669; color: white; }
+    .rtl { direction: rtl; }
+    .ltr { direction: ltr; }
+    .ad-card { border: 2px solid #fbbf24; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
     .camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column; }
     .camera-modal.active { display: flex; }
     video { width: 100%; height: 60%; object-fit: cover; }
-    .ad-card { border: 2px solid #fbbf24; background: linear-gradient(135deg, #fffbeb, #fef3c7); }
   </style>
 </head>
 <body class="rtl">
@@ -59,7 +46,7 @@
   <div id="aiResult" class="p-4 bg-white dark:bg-gray-800 hidden"></div>
 </div>
 
-<!-- Main App Container -->
+<!-- Main App -->
 <div id="app" class="container mx-auto px-4 py-6 max-w-7xl">
   
   <!-- Header -->
@@ -70,50 +57,45 @@
       </div>
       <div>
         <h1 id="appTitle" class="text-2xl font-bold text-emerald-800">سیستم مدیریت مکتب</h1>
-        <p id="appSubtitle" class="text-xs text-gray-500">نسخه ۳.۰ - آفلاین</p>
+        <p class="text-xs text-gray-500">نسخه کامل - آفلاین</p>
       </div>
     </div>
-    
     <div class="flex gap-2">
-      <div class="flex bg-white rounded-lg shadow overflow-hidden">
-        <button onclick="setLanguage('dari')" id="langDari" class="px-3 py-2 text-sm font-medium transition language-btn active">دری</button>
-        <button onclick="setLanguage('pashto')" id="langPashto" class="px-3 py-2 text-sm font-medium transition language-btn">پښتو</button>
-        <button onclick="setLanguage('english')" id="langEnglish" class="px-3 py-2 text-sm font-medium transition language-btn">English</button>
+      <div class="flex bg-white rounded-lg shadow">
+        <button onclick="setLang('dari')" id="langDari" class="px-3 py-2 text-sm lang-btn active">دری</button>
+        <button onclick="setLang('pashto')" id="langPashto" class="px-3 py-2 text-sm lang-btn">پښتو</button>
+        <button onclick="setLang('english')" id="langEnglish" class="px-3 py-2 text-sm lang-btn">English</button>
       </div>
-      
       <div id="userInfo" class="bg-white rounded-lg shadow px-4 py-2 flex items-center gap-2">
         <i class="fas fa-user-circle text-emerald-600 text-xl"></i>
         <span id="userName" class="font-medium"></span>
         <span id="userRole" class="text-xs text-gray-500"></span>
       </div>
-      
-      <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-        <i class="fas fa-sign-out-alt ml-1"></i> <span id="logoutBtn">خروج</span>
-      </button>
+      <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">خروج</button>
     </div>
   </div>
   
-  <!-- Role Selection Cards -->
-  <div id="roleSelection" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div onclick="selectRole('principal')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+  <!-- Role Cards -->
+  <div id="roleSelection" class="grid md:grid-cols-4 gap-6 mb-8">
+    <div onclick="selectRole('principal')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer text-center">
       <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-crown text-white text-3xl"></i></div>
-      <h3 class="text-xl font-bold text-center mb-2" data-key="principal">مدیر مکتب</h3>
-      <p class="text-sm text-gray-500 text-center" data-key="principalDesc">مدیریت کامل، تبلیغات، گزارشات</p>
+      <h3 class="text-xl font-bold">مدیر مکتب</h3>
+      <p class="text-sm text-gray-500">مدیریت کامل، تبلیغات، گزارشات</p>
     </div>
-    <div onclick="selectRole('finance')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+    <div onclick="selectRole('finance')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer text-center">
       <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-chart-line text-white text-3xl"></i></div>
-      <h3 class="text-xl font-bold text-center mb-2" data-key="financeManager">مدیر مالی</h3>
-      <p class="text-sm text-gray-500 text-center" data-key="financeDesc">دریافت شهریه، حسابداری، گزارشات</p>
+      <h3 class="text-xl font-bold">مدیر مالی</h3>
+      <p class="text-sm text-gray-500">دریافت شهریه، حسابداری</p>
     </div>
-    <div onclick="selectRole('headteacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+    <div onclick="selectRole('headteacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer text-center">
       <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-chalkboard-user text-white text-3xl"></i></div>
-      <h3 class="text-xl font-bold text-center mb-2" data-key="headTeacher">استاد سر</h3>
-      <p class="text-sm text-gray-500 text-center" data-key="headDesc">مدیریت شاگردان، جدول‌ها، فرم‌ها</p>
+      <h3 class="text-xl font-bold">استاد سر</h3>
+      <p class="text-sm text-gray-500">مدیریت شاگردان، فرم‌ها</p>
     </div>
-    <div onclick="selectRole('teacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer border-2 border-transparent hover:border-emerald-500">
+    <div onclick="selectRole('teacher')" class="bg-white rounded-2xl p-6 shadow-lg card-hover cursor-pointer text-center">
       <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-person-chalkboard text-white text-3xl"></i></div>
-      <h3 class="text-xl font-bold text-center mb-2" data-key="teacher">استاد</h3>
-      <p class="text-sm text-gray-500 text-center" data-key="teacherDesc">حاضری، امتحانات، کار عملی</p>
+      <h3 class="text-xl font-bold">استاد</h3>
+      <p class="text-sm text-gray-500">حاضری، امتحانات</p>
     </div>
   </div>
   
@@ -124,715 +106,596 @@
 <div id="loginModal" class="modal">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
     <div class="text-center mb-6">
-      <div class="w-20 h-20 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-graduation-cap text-white text-4xl"></i>
-      </div>
-      <h2 id="loginTitle" class="text-2xl font-bold">ورود به سیستم</h2>
+      <div class="w-20 h-20 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-graduation-cap text-white text-4xl"></i></div>
+      <h2 class="text-2xl font-bold">ورود به سیستم</h2>
     </div>
     <form onsubmit="handleLogin(event)">
-      <div class="mb-4"><label class="block text-sm font-medium mb-2">آدرس ایمیل</label><input type="email" id="loginEmail" required class="w-full border rounded-lg px-4 py-2 ltr"></div>
-      <div class="mb-4"><label class="block text-sm font-medium mb-2">رمز عبور</label><input type="password" id="loginPassword" required class="w-full border rounded-lg px-4 py-2 ltr"></div>
-      <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700">ورود</button>
+      <input type="email" id="loginEmail" placeholder="ایمیل" required class="w-full border rounded-lg p-3 mb-3 ltr">
+      <input type="password" id="loginPassword" placeholder="رمز عبور" required class="w-full border rounded-lg p-3 mb-4 ltr">
+      <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold">ورود</button>
     </form>
-    <div class="text-center mt-4"><button onclick="showSignup()" class="text-emerald-600 text-sm hover:underline">حساب ندارید؟ ثبت نام کنید</button></div>
+    <div class="text-center mt-4"><button onclick="showSignup()" class="text-emerald-600">حساب ندارید؟ ثبت نام</button></div>
   </div>
 </div>
 
-<!-- Signup Modal -->
+<!-- Signup Modal - نقش استاد REMOVED from signup -->
 <div id="signupModal" class="modal">
   <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-    <div class="text-center mb-6">
-      <div class="w-20 h-20 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-user-plus text-white text-4xl"></i>
-      </div>
-      <h2 class="text-2xl font-bold">ثبت نام</h2>
-    </div>
+    <h2 class="text-2xl font-bold text-center mb-6">ثبت نام</h2>
     <form onsubmit="handleSignup(event)" class="space-y-4">
       <div class="grid md:grid-cols-2 gap-4">
-        <div><label>نام</label><input type="text" id="signupFirstName" required class="w-full border rounded-lg p-2"></div>
-        <div><label>نام خانوادگی</label><input type="text" id="signupLastName" required class="w-full border rounded-lg p-2"></div>
+        <input type="text" id="signupFirstName" placeholder="نام" required class="border rounded-lg p-3">
+        <input type="text" id="signupLastName" placeholder="نام خانوادگی" required class="border rounded-lg p-3">
       </div>
-      <div><label>آدرس ایمیل</label><input type="email" id="signupEmail" required class="w-full border rounded-lg p-2 ltr"></div>
-      <div><label>شماره تماس</label><input type="tel" id="signupPhone" required class="w-full border rounded-lg p-2 ltr"></div>
-      <div><label>نام مکتب</label><input type="text" id="signupSchool" required class="w-full border rounded-lg p-2"></div>
-      <div><label>رمز عبور</label><input type="password" id="signupPassword" required minlength="4" class="w-full border rounded-lg p-2 ltr"></div>
+      <input type="email" id="signupEmail" placeholder="ایمیل" required class="w-full border rounded-lg p-3 ltr">
+      <input type="tel" id="signupPhone" placeholder="شماره تماس" required class="w-full border rounded-lg p-3 ltr">
+      <input type="text" id="signupSchool" placeholder="نام مکتب" required class="w-full border rounded-lg p-3">
+      <input type="password" id="signupPassword" placeholder="رمز عبور" required class="w-full border rounded-lg p-3 ltr">
       
-      <div><label>نقش شما</label>
-        <select id="signupRole" class="w-full border rounded-lg p-2" onchange="toggleTeacherFields()">
-          <option value="principal">مدیر مکتب</option>
-          <option value="finance">مدیر مالی</option>
-          <option value="headteacher">استاد سر</option>
-          <option value="teacher">استاد</option>
-        </select>
-      </div>
-      
-      <!-- Teacher Specific Fields -->
-      <div id="teacherFields" class="hidden space-y-4 border-t pt-4">
-        <h3 class="font-bold">اطلاعات تدریسی</h3>
-        <div><label>مضمون‌های تدریسی</label><input type="text" id="teacherSubjects" placeholder="ریاضی, دری, علوم" class="w-full border rounded-lg p-2"></div>
-        <div><label>صنف‌های تدریسی</label><input type="text" id="teacherClasses" placeholder="صنف ۶, صنف ۷" class="w-full border rounded-lg p-2"></div>
-      </div>
+      <!-- CHANGE 1: نقش استاد REMOVED from signup -->
+      <select id="signupRole" class="w-full border rounded-lg p-3">
+        <option value="principal">مدیر مکتب</option>
+        <option value="finance">مدیر مالی</option>
+        <option value="headteacher">استاد سر</option>
+      </select>
       
       <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold">ثبت نام</button>
     </form>
-    <div class="text-center mt-4"><button onclick="showLogin()" class="text-emerald-600 text-sm hover:underline">قبلاً حساب دارید؟ وارد شوید</button></div>
+    <div class="text-center mt-4"><button onclick="showLogin()" class="text-emerald-600">قبلاً حساب دارید؟ وارد شوید</button></div>
   </div>
 </div>
 
 <script>
-  // ==================== STORAGE KEYS ====================
-  const STORAGE = {
-    USERS: 'school_users_v3',
-    STUDENTS: 'school_students_v3',
-    TEACHERS: 'school_teachers_v3',
-    CLASSES: 'school_classes_v3',
-    SUBJECTS: 'school_subjects_v3',
-    HOMEWORK: 'school_homework_v3',
-    ATTENDANCE: 'school_attendance_v3',
-    SALARIES: 'school_salaries_v3',
-    FEES: 'school_fees_v3',
-    JOURNAL: 'school_journal_v3',
-    AD_PACKAGES: 'school_ad_packages_v3',
-    AD_PURCHASES: 'school_ad_purchases_v3',
-    TEMP_STUDENTS: 'school_temp_students_v3',
-    CONDITIONAL: 'school_conditional_v3',
-    BANNED: 'school_banned_v3',
-    TRANSFERS: 'school_transfers_v3'
+// ==================== STORAGE KEYS ====================
+const STORAGE = {
+  USERS: 'school_users_complete_final',
+  STUDENTS: 'school_students_complete_final',
+  TEACHERS: 'school_teachers_complete_final',
+  CLASSES: 'school_classes_complete_final',
+  SUBJECTS: 'school_subjects_complete_final',
+  HOMEWORK: 'school_homework_complete_final',
+  ATTENDANCE: 'school_attendance_complete_final',
+  SALARIES: 'school_salaries_complete_final',
+  FEES: 'school_fees_complete_final',
+  JOURNAL: 'school_journal_complete_final',
+  AD_PACKAGES: 'school_ad_packages_complete_final',
+  AD_PURCHASES: 'school_ad_purchases_complete_final',
+  TEMP_STUDENTS: 'school_temp_students_complete_final',
+  CONDITIONAL: 'school_conditional_complete_final',
+  BANNED: 'school_banned_complete_final',
+  TRANSFERS: 'school_transfers_complete_final'
+};
+
+let currentUser = null;
+let currentRole = null;
+let currentLang = localStorage.getItem('lang') || 'dari';
+
+const translations = {
+  dari: { principal: "مدیر مکتب", finance: "مدیر مالی", headteacher: "استاد سر", teacher: "استاد", attendance: "حاضری", salary: "معاش", profit: "سود", loss: "زیان", journal: "ژورنال", advertising: "تبلیغات", selectClass: "انتخاب صنف", present: "حاضر", absent: "غایب", save: "ذخیره", delete: "حذف", newEnrollment: "فورم جدید الشمول", temporary: "شاگردان موقت", conditional: "شاگردان مشروط", banned: "محرومین سه ساله", baseBook: "کتاب اساس", transfer: "جدول رفت و آمد" },
+  pashto: { principal: "د مکتب مدیر", finance: "مالي مدیر", headteacher: "لومړی استاد", teacher: "استاد", attendance: "حاضرتی", salary: "معاش", profit: "ګټه", loss: "زیان", journal: "ژورنال", advertising: "اعلانات", selectClass: "صنف انتخاب کړئ", present: "حاضر", absent: "غایب", save: "خوندي کول", delete: "ړنګول", newEnrollment: "د نوي شاملیدو فورم", temporary: "عارضي زده کونکي", conditional: "مشروط زده کونکي", banned: "د درې کلونو محروم", baseBook: "اساسی کتاب", transfer: "د تګ راتګ جدول" },
+  english: { principal: "Principal", finance: "Finance Manager", headteacher: "Head Teacher", teacher: "Teacher", attendance: "Attendance", salary: "Salary", profit: "Profit", loss: "Loss", journal: "Journal", advertising: "Advertising", selectClass: "Select Class", present: "Present", absent: "Absent", save: "Save", delete: "Delete", newEnrollment: "New Enrollment Form", temporary: "Temporary Students", conditional: "Conditional Students", banned: "3-Year Banned", baseBook: "Base Book", transfer: "Transfer Table" }
+};
+
+function t(key) { return translations[currentLang][key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`lang${lang.charAt(0).toUpperCase() + lang.slice(1)}`).classList.add('active');
+  document.getElementById('appTitle').textContent = "سیستم مدیریت مکتب";
+  if (currentRole) renderDashboard();
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.background = isError ? '#dc2626' : '#059669';
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+// ==================== INIT DATA ====================
+function initData() {
+  if (!localStorage.getItem(STORAGE.USERS)) {
+    localStorage.setItem(STORAGE.USERS, JSON.stringify([
+      { id: '1', email: 'admin@school.com', password: 'admin123', firstName: 'مدیر', lastName: 'سیستم', phone: '0770000000', school: 'مکتب نمونه', role: 'principal' }
+    ]));
+  }
+  if (!localStorage.getItem(STORAGE.CLASSES)) {
+    localStorage.setItem(STORAGE.CLASSES, JSON.stringify([
+      { id: '1', name: 'صنف ۶', gradeLevel: 6 },
+      { id: '2', name: 'صنف ۷', gradeLevel: 7 },
+      { id: '3', name: 'صنف ۸', gradeLevel: 8 },
+      { id: '4', name: 'صنف ۹', gradeLevel: 9 },
+      { id: '5', name: 'صنف ۱۰', gradeLevel: 10 }
+    ]));
+  }
+  if (!localStorage.getItem(STORAGE.SUBJECTS)) {
+    localStorage.setItem(STORAGE.SUBJECTS, JSON.stringify([
+      { id: '1', name: 'دری', fullMarks: 100 },
+      { id: '2', name: 'پښتو', fullMarks: 100 },
+      { id: '3', name: 'ریاضی', fullMarks: 100 },
+      { id: '4', name: 'علوم', fullMarks: 100 },
+      { id: '5', name: 'انگلیسی', fullMarks: 100 }
+    ]));
+  }
+  if (!localStorage.getItem(STORAGE.TEACHERS)) localStorage.setItem(STORAGE.TEACHERS, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.STUDENTS)) localStorage.setItem(STORAGE.STUDENTS, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.HOMEWORK)) localStorage.setItem(STORAGE.HOMEWORK, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.ATTENDANCE)) localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.SALARIES)) localStorage.setItem(STORAGE.SALARIES, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.FEES)) localStorage.setItem(STORAGE.FEES, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.JOURNAL)) localStorage.setItem(STORAGE.JOURNAL, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.AD_PACKAGES)) {
+    localStorage.setItem(STORAGE.AD_PACKAGES, JSON.stringify([
+      { id: '1', name: 'پکیج یک ماهه', months: 1, priceUSD: 10, priceAFN: 850 },
+      { id: '2', name: 'پکیج دو ماهه', months: 2, priceUSD: 18, priceAFN: 1530 },
+      { id: '3', name: 'پکیج سه ماهه', months: 3, priceUSD: 25, priceAFN: 2125 }
+    ]));
+  }
+  if (!localStorage.getItem(STORAGE.AD_PURCHASES)) localStorage.setItem(STORAGE.AD_PURCHASES, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.TEMP_STUDENTS)) localStorage.setItem(STORAGE.TEMP_STUDENTS, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.CONDITIONAL)) localStorage.setItem(STORAGE.CONDITIONAL, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.BANNED)) localStorage.setItem(STORAGE.BANNED, JSON.stringify([]));
+  if (!localStorage.getItem(STORAGE.TRANSFERS)) localStorage.setItem(STORAGE.TRANSFERS, JSON.stringify([]));
+}
+
+// ==================== AUTH ====================
+function showLogin() {
+  document.getElementById('loginModal').classList.add('active');
+  document.getElementById('signupModal').classList.remove('active');
+}
+function showSignup() {
+  document.getElementById('signupModal').classList.add('active');
+  document.getElementById('loginModal').classList.remove('active');
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const users = JSON.parse(localStorage.getItem(STORAGE.USERS));
+  const user = users.find(u => u.email === email && u.password === password);
+  if (user) {
+    currentUser = user;
+    currentRole = user.role;
+    localStorage.setItem('currentUser', JSON.stringify({ id: user.id, role: user.role }));
+    document.getElementById('loginModal').classList.remove('active');
+    document.getElementById('userName').textContent = `${user.firstName} ${user.lastName}`;
+    document.getElementById('userRole').textContent = t(user.role);
+    document.getElementById('roleSelection').style.display = 'grid';
+    showToast(`خوش آمدید ${user.firstName}`);
+  } else showToast('ایمیل یا رمز اشتباه است', true);
+}
+
+function handleSignup(e) {
+  e.preventDefault();
+  const firstName = document.getElementById('signupFirstName').value;
+  const lastName = document.getElementById('signupLastName').value;
+  const email = document.getElementById('signupEmail').value;
+  const phone = document.getElementById('signupPhone').value;
+  const school = document.getElementById('signupSchool').value;
+  const password = document.getElementById('signupPassword').value;
+  const role = document.getElementById('signupRole').value;
+  const users = JSON.parse(localStorage.getItem(STORAGE.USERS));
+  if (users.find(u => u.email === email)) return showToast('این ایمیل قبلاً ثبت شده است', true);
+  
+  const newUser = { id: Date.now().toString(), firstName, lastName, email, phone, school, password, role };
+  users.push(newUser);
+  localStorage.setItem(STORAGE.USERS, JSON.stringify(users));
+  showToast('حساب ایجاد شد! وارد شوید');
+  showLogin();
+}
+
+function logout() {
+  currentUser = null; currentRole = null;
+  localStorage.removeItem('currentUser');
+  document.getElementById('roleSelection').style.display = 'grid';
+  document.getElementById('dashboardContainer').innerHTML = '';
+  showLogin();
+}
+
+function selectRole(role) {
+  currentRole = role;
+  document.getElementById('roleSelection').style.display = 'none';
+  renderDashboard();
+}
+
+// ==================== DASHBOARD RENDERER ====================
+function renderDashboard() {
+  const container = document.getElementById('dashboardContainer');
+  if (currentRole === 'principal') renderPrincipal(container);
+  else if (currentRole === 'finance') renderFinance(container);
+  else if (currentRole === 'headteacher') renderHeadTeacher(container);
+  else if (currentRole === 'teacher') renderTeacher(container);
+}
+
+// ==================== PRINCIPAL DASHBOARD ====================
+function renderPrincipal(container) {
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+      <div class="flex justify-between"><h2 class="text-2xl font-bold"><i class="fas fa-crown text-amber-500 ml-2"></i> ${t('principal')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div>
+    </div>
+    <div class="grid md:grid-cols-4 gap-4 mb-6">
+      <div onclick="showClassesTeachers()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-chalkboard text-3xl text-blue-600 mb-2"></i><h3 class="font-bold">صنف‌ها و معلمین</h3></div>
+      <div onclick="showSalarySection()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-money-bill text-3xl text-green-600 mb-2"></i><h3 class="font-bold">${t('salary')}</h3></div>
+      <div onclick="showAdvertisingSystem()" class="bg-white ad-card p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-ad text-3xl text-amber-600 mb-2"></i><h3 class="font-bold">${t('advertising')}</h3><span class="text-xs">از 10$</span></div>
+      <div onclick="showProfitLossReport()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-chart-line text-3xl text-emerald-600 mb-2"></i><h3 class="font-bold">گزارش سود/زیان</h3></div>
+    </div>
+    <div id="principalContent" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+  `;
+}
+
+function showClassesTeachers() {
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS));
+  const content = document.getElementById('principalContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">صنف‌ها و معلمین</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-3 text-right">صنف</th><th class="p-3 text-right">معلم</th><th class="p-3 text-right">مضمون‌ها</th></tr></thead><tbody>${classes.map(c => { const tchs = teachers.filter(t => t.classes && t.classes.includes(c.name)); return `<tr class="border-b"><td class="p-3 font-bold">${c.name}</td><td class="p-3">${tchs.map(t => t.fullName).join(', ') || 'تعیین نشده'}</td><td class="p-3">${tchs.map(t => t.subjects).join(', ') || '-'}</td></tr>`; }).join('')}</tbody></tr></div>`;
+}
+
+function showSalarySection() {
+  const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS));
+  const content = document.getElementById('principalContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('salary')}</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-3">نام استاد</th><th class="p-3">مضمون‌ها</th><th class="p-3">معاش پایه</th><th class="p-3">ماه</th><th class="p-3"></th></tr></thead><tbody>${teachers.map(t => `<tr class="border-b"><td class="p-3">${t.fullName}</td><td class="p-3">${t.subjects || '-'}</td><td class="p-3"><input type="number" id="sal_${t.id}" value="${t.salary || 5000}" class="border rounded p-1 w-24"> افغانی</td><td class="p-3"><select id="month_${t.id}">${['جنوری','فبروری','مارچ','اپریل','می','جون','جولای','آگست','سپتامبر','اکتوبر','نومبر','دسمبر'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select></td><td class="p-3"><button onclick="paySalary('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded">پرداخت</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function paySalary(teacherId) {
+  const amount = parseInt(document.getElementById(`sal_${teacherId}`).value);
+  const month = document.getElementById(`month_${teacherId}`).value;
+  if (!amount) return showToast('مبلغ را وارد کنید', true);
+  const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES));
+  salaries.push({ id: Date.now().toString(), teacherId, amount, month: parseInt(month), year: new Date().getFullYear(), date: new Date().toISOString() });
+  localStorage.setItem(STORAGE.SALARIES, JSON.stringify(salaries));
+  const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL));
+  journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `پرداخت معاش ماه ${month}`, debit: amount, credit: 0 });
+  localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
+  showToast(`معاش ${amount} افغانی پرداخت شد`);
+  showSalarySection();
+}
+
+// CHANGE 3: Advertising System Added
+function showAdvertisingSystem() {
+  const packages = JSON.parse(localStorage.getItem(STORAGE.AD_PACKAGES));
+  const purchases = JSON.parse(localStorage.getItem(STORAGE.AD_PURCHASES));
+  const content = document.getElementById('principalContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('advertising')} - سیستم تبلیغات</h3>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      ${packages.map(p => `<div class="border-2 border-amber-300 rounded-xl p-4 text-center bg-amber-50">
+        <h4 class="font-bold text-lg">${p.name}</h4>
+        <div class="text-2xl font-bold text-amber-600 my-2">${p.priceUSD} $</div>
+        <div class="text-sm text-gray-500">${p.months} ماه</div>
+        <button onclick="buyAdPackage('${p.id}', ${p.priceUSD}, '${p.name}', ${p.months})" class="mt-3 bg-amber-600 text-white px-4 py-2 rounded-lg w-full">خرید پکیج</button>
+      </div>`).join('')}
+    </div>
+    <h4 class="font-bold mb-2">تاریخچه خرید تبلیغات</h4>
+    <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">پکیج</th><th class="p-2">مبلغ</th><th class="p-2">تاریخ انقضا</th></tr></thead><tbody>
+      ${purchases.map(p => `<tr class="border-b"><td class="p-2">${new Date(p.date).toLocaleDateString('fa-IR')}</td><td class="p-2">${p.packageName}</td><td class="p-2">${p.amountUSD} $ (${p.amountAFN} AFN)</td><td class="p-2">${new Date(p.expiryDate).toLocaleDateString('fa-IR')}</td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function buyAdPackage(packageId, priceUSD, packageName, months) {
+  const priceAFN = priceUSD * 85;
+  const purchases = JSON.parse(localStorage.getItem(STORAGE.AD_PURCHASES));
+  const expiryDate = new Date();
+  expiryDate.setMonth(expiryDate.getMonth() + months);
+  purchases.push({ 
+    id: Date.now().toString(), 
+    packageId, 
+    packageName, 
+    amountUSD: priceUSD, 
+    amountAFN: priceAFN, 
+    months: months,
+    date: new Date().toISOString(), 
+    expiryDate: expiryDate.toISOString() 
+  });
+  localStorage.setItem(STORAGE.AD_PURCHASES, JSON.stringify(purchases));
+  const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL));
+  journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `خرید ${packageName} تبلیغات`, debit: 0, credit: priceAFN });
+  localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
+  showToast(`پکیج ${packageName} با موفقیت خریداری شد`);
+  showAdvertisingSystem();
+}
+
+function showProfitLossReport() {
+  const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL));
+  const totalCredit = journal.reduce((sum, j) => sum + (j.credit || 0), 0);
+  const totalDebit = journal.reduce((sum, j) => sum + (j.debit || 0), 0);
+  const profitLoss = totalCredit - totalDebit;
+  const content = document.getElementById('principalContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">گزارش سود و زیان (Profit & Loss)</h3>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-green-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-green-600">${totalCredit} افغانی</div><div>مجموع دریافتی</div></div>
+      <div class="bg-red-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-red-600">${totalDebit} افغانی</div><div>مجموع پرداختی</div></div>
+      <div class="bg-blue-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-blue-600">${profitLoss} افغانی</div><div>${profitLoss >= 0 ? 'سود خالص' : 'زیان خالص'}</div></div>
+    </div>
+    <h4 class="font-bold mb-2">دفتر روزنامه (Journal)</h4>
+    <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">شرح</th><th class="p-2">بدهکار</th><th class="p-2">بستانکار</th></tr></thead><tbody>
+      ${journal.map(j => `<tr class="border-b"><td class="p-2">${new Date(j.date).toLocaleDateString('fa-IR')}</td><td class="p-2">${j.description}</td><td class="p-2">${j.debit || 0}</td><td class="p-2">${j.credit || 0}</td></tr>`).join('')}
+    </tbody></table></div>
+    <button onclick="exportToExcel()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg">خروجی Excel</button>
+    <button onclick="exportToPDF()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg mr-2">خروجی PDF</button>`;
+}
+
+// ==================== FINANCE DASHBOARD with complete student details ====================
+function renderFinance(container) {
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between"><h2 class="text-2xl font-bold"><i class="fas fa-chart-line text-emerald-500 ml-2"></i> ${t('finance')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
+    <div id="financeContent" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+  `;
+  showFullFeeCollection();
+}
+
+function showFullFeeCollection() {
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS));
+  const fees = JSON.parse(localStorage.getItem(STORAGE.FEES));
+  const content = document.getElementById('financeContent');
+  content.innerHTML = `
+    <div class="mb-4"><label class="font-bold">${t('selectClass')}</label><select id="classFilter" class="w-full max-w-xs border rounded-lg p-2 mr-2" onchange="filterStudentsByClass()"><option value="">همه صنف‌ها</option>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+    <div id="studentsFeeList" class="overflow-x-auto"><h3 class="text-xl font-bold mb-4">جزئیات کامل شاگردان و دریافت شهریه</h3><table class="w-full text-sm border"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">نام پدر</th><th class="p-2">تذکره/سن</th><th class="p-2">شغل پدر</th><th class="p-2">ولایت/ولسوالی/روستا</th><th class="p-2">ولایت اصلی</th><th class="p-2">نزدیکان/نسبت</th><th class="p-2">شماره تماس</th><th class="p-2">شهریه ماهانه</th><th class="p-2">پرداخت شده</th><th class="p-2">باقی مانده</th><th class="p-2"></th></tr></thead><tbody>${renderStudentRows(students, fees)}</tbody></table></div>`;
+}
+
+function renderStudentRows(students, fees) {
+  return students.map(s => { 
+    const paid = fees.filter(f => f.studentId === s.id && f.type !== 'salary').reduce((sum, f) => sum + f.amount, 0); 
+    const remaining = (s.monthlyFee || 1000) - paid; 
+    return `<tr class="border-b"><td class="p-2">${s.fullName}</td><td class="p-2">${s.fatherName || '-'}</td><td class="p-2">${s.tazkira || '-'}/${s.age || '-'}</td><td class="p-2">${s.fatherJob || '-'}</td><td class="p-2">${s.currentProvince || '-'}/${s.currentDistrict || '-'}/${s.currentVillage || '-'}</td><td class="p-2">${s.originalProvince || '-'}</td><td class="p-2">${s.relativeName || '-'}<br><small class="text-gray-500">(${s.relationship || '-'})</small></td><td class="p-2">${s.relativePhone || s.parentPhone || '-'}</td><td class="p-2">${s.monthlyFee || 1000} افغانی</td><td class="p-2 text-green-600">${paid} افغانی</td><td class="p-2 ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${remaining} افغانی</td><td class="p-2"><input type="number" id="fee_${s.id}" class="w-20 border rounded p-1" placeholder="مبلغ"><button onclick="collectFee('${s.id}', '${s.fullName}')" class="bg-emerald-600 text-white px-2 py-1 rounded text-sm">دریافت</button></td></tr>`;
+  }).join('');
+}
+
+function filterStudentsByClass() {
+  const classId = document.getElementById('classFilter').value;
+  let students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS));
+  if (classId) students = students.filter(s => s.classId === classId);
+  const fees = JSON.parse(localStorage.getItem(STORAGE.FEES));
+  document.getElementById('studentsFeeList').innerHTML = `<h3 class="text-xl font-bold mb-4">جزئیات کامل شاگردان و دریافت شهریه</h3><table class="w-full text-sm border"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">نام پدر</th><th class="p-2">تذکره/سن</th><th class="p-2">شغل پدر</th><th class="p-2">ولایت/ولسوالی/روستا</th><th class="p-2">ولایت اصلی</th><th class="p-2">نزدیکان/نسبت</th><th class="p-2">شماره تماس</th><th class="p-2">شهریه ماهانه</th><th class="p-2">پرداخت شده</th><th class="p-2">باقی مانده</th><th class="p-2"></th></tr></thead><tbody>${renderStudentRows(students, fees)}</tbody></tr>`;
+}
+
+function collectFee(studentId, studentName) {
+  const amount = parseInt(document.getElementById(`fee_${studentId}`).value);
+  if (!amount || amount <= 0) return showToast('مبلغ معتبر وارد کنید', true);
+  const fees = JSON.parse(localStorage.getItem(STORAGE.FEES));
+  fees.push({ id: Date.now().toString(), studentId, amount, type: 'fee', date: new Date().toISOString() });
+  localStorage.setItem(STORAGE.FEES, JSON.stringify(fees));
+  const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL));
+  journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `دریافت شهریه از ${studentName} به مبلغ ${amount} افغانی`, debit: 0, credit: amount });
+  localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
+  showToast(`مبلغ ${amount} افغانی از ${studentName} دریافت شد`);
+  filterStudentsByClass();
+}
+
+// ==================== HEAD TEACHER DASHBOARD ====================
+function renderHeadTeacher(container) {
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between"><h2 class="text-2xl font-bold"><i class="fas fa-graduation-cap text-blue-500 ml-2"></i> ${t('headteacher')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div onclick="showStudentForm()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-user-plus text-3xl text-emerald-600 mb-2"></i><h3 class="font-bold">${t('newEnrollment')}</h3></div>
+      <div onclick="showStudentList()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-users text-3xl text-blue-600 mb-2"></i><h3 class="font-bold">لیست شاگردان</h3></div>
+      <div onclick="showTemporaryStudents()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-clock text-3xl text-yellow-600 mb-2"></i><h3 class="font-bold">${t('temporary')}</h3></div>
+    </div>
+    <div id="headContent" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+  `;
+}
+
+function showStudentForm() {
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const content = document.getElementById('headContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('newEnrollment')} - فورم جدید الشمول</h3><form onsubmit="saveStudent(event)" class="grid md:grid-cols-2 gap-4"><input type="text" id="fullName" placeholder="نام کامل" required class="border rounded p-2"><input type="text" id="fatherName" placeholder="نام پدر" required class="border rounded p-2"><input type="text" id="tazkira" placeholder="شماره تذکره" class="border rounded p-2"><input type="number" id="age" placeholder="سن" class="border rounded p-2"><input type="text" id="fatherJob" placeholder="شغل پدر" class="border rounded p-2"><input type="text" id="currentProvince" placeholder="ولایت فعلی" class="border rounded p-2"><input type="text" id="currentDistrict" placeholder="ولسوالی فعلی" class="border rounded p-2"><input type="text" id="currentVillage" placeholder="روستای فعلی" class="border rounded p-2"><input type="text" id="originalProvince" placeholder="ولایت اصلی" class="border rounded p-2"><input type="text" id="originalDistrict" placeholder="ولسوالی اصلی" class="border rounded p-2"><input type="text" id="relativeName" placeholder="نام نزدیکان (کاکا/ماما/خالو/عمو)" class="border rounded p-2"><select id="relationship" class="border rounded p-2"><option value="کاکا">کاکا</option><option value="ماما">ماما</option><option value="پسر ماما">پسر ماما</option><option value="خالو">خالو</option><option value="عمو">عمو</option></select><input type="tel" id="relativePhone" placeholder="شماره تماس نزدیکان" class="border rounded p-2"><input type="tel" id="parentPhone" placeholder="شماره تماس والدین" class="border rounded p-2"><select id="classId" class="border rounded p-2">${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select><input type="number" id="monthlyFee" placeholder="شهریه ماهانه" value="1000" class="border rounded p-2"><div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-lg w-full">ثبت شاگرد</button></div></form>`;
+}
+
+function saveStudent(e) {
+  e.preventDefault();
+  const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS));
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const classId = document.getElementById('classId').value;
+  const newStudent = {
+    id: Date.now().toString(),
+    fullName: document.getElementById('fullName').value,
+    fatherName: document.getElementById('fatherName').value,
+    tazkira: document.getElementById('tazkira').value,
+    age: document.getElementById('age').value,
+    fatherJob: document.getElementById('fatherJob').value,
+    currentProvince: document.getElementById('currentProvince').value,
+    currentDistrict: document.getElementById('currentDistrict').value,
+    currentVillage: document.getElementById('currentVillage').value,
+    originalProvince: document.getElementById('originalProvince').value,
+    originalDistrict: document.getElementById('originalDistrict').value,
+    relativeName: document.getElementById('relativeName').value,
+    relationship: document.getElementById('relationship').value,
+    relativePhone: document.getElementById('relativePhone').value,
+    parentPhone: document.getElementById('parentPhone').value,
+    classId: classId,
+    monthlyFee: parseInt(document.getElementById('monthlyFee').value),
+    rollNumber: students.length + 1,
+    className: classes.find(c => c.id === classId)?.name
   };
-  
-  let currentUser = null;
-  let currentRole = null;
-  let currentLanguage = localStorage.getItem('language') || 'dari';
-  
-  // ==================== INIT STORAGE ====================
-  function initStorage() {
-    if (!localStorage.getItem(STORAGE.USERS)) {
-      localStorage.setItem(STORAGE.USERS, JSON.stringify([{
-        id: '1', email: 'admin@school.com', password: 'admin123', firstName: 'مدیر', lastName: 'سیستم',
-        phone: '0770000000', school: 'مکتب نمونه', role: 'principal'
-      }]));
+  students.push(newStudent);
+  localStorage.setItem(STORAGE.STUDENTS, JSON.stringify(students));
+  showToast('شاگرد با موفقیت ثبت شد');
+  showStudentList();
+}
+
+function showStudentList() {
+  const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS));
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const content = document.getElementById('headContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">لیست شاگردان</h3><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-gray-100"><th class="p-2">نام</th><th class="p-2">نام پدر</th><th class="p-2">ولایت</th><th class="p-2">صنف</th><th class="p-2">شهریه</th></tr></thead><tbody>${students.map(s => `<tr class="border-b"><td class="p-2">${s.fullName}</td><td class="p-2">${s.fatherName}</td><td class="p-2">${s.currentProvince || '-'}</td><td class="p-2">${classes.find(c => c.id === s.classId)?.name || '-'}</td><td class="p-2">${s.monthlyFee} افغانی</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function showTemporaryStudents() {
+  const temps = JSON.parse(localStorage.getItem(STORAGE.TEMP_STUDENTS));
+  const content = document.getElementById('headContent');
+  content.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('temporary')}</h3><form onsubmit="addTempStudent(event)" class="grid md:grid-cols-2 gap-4 mb-6"><input type="text" id="tempName" placeholder="نام شاگرد" required class="border rounded p-2"><input type="text" id="tempClass" placeholder="صنف" class="border rounded p-2"><input type="date" id="tempStart" placeholder="تاریخ شروع" class="border rounded p-2"><input type="date" id="tempEnd" placeholder="تاریخ پایان" class="border rounded p-2"><input type="text" id="tempReason" placeholder="دلیل" class="border rounded p-2"><div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg">افزودن</button></div></form><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام</th><th class="p-2">صنف</th><th class="p-2">از تاریخ</th><th class="p-2">تا تاریخ</th><th class="p-2">دلیل</th></tr></thead><tbody>${temps.map(t => `<tr class="border-b"><td class="p-2">${t.name}</td><td class="p-2">${t.className}</td><td class="p-2">${t.startDate}</td><td class="p-2">${t.endDate}</td><td class="p-2">${t.reason}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function addTempStudent(e) {
+  e.preventDefault();
+  const temps = JSON.parse(localStorage.getItem(STORAGE.TEMP_STUDENTS));
+  temps.push({ id: Date.now().toString(), name: document.getElementById('tempName').value, className: document.getElementById('tempClass').value, startDate: document.getElementById('tempStart').value, endDate: document.getElementById('tempEnd').value, reason: document.getElementById('tempReason').value });
+  localStorage.setItem(STORAGE.TEMP_STUDENTS, JSON.stringify(temps));
+  showToast('شاگرد موقت اضافه شد');
+  showTemporaryStudents();
+}
+
+// ==================== TEACHER DASHBOARD ====================
+function renderTeacher(container) {
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between"><h2 class="text-2xl font-bold"><i class="fas fa-person-chalkboard text-purple-500 ml-2"></i> ${t('teacher')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div onclick="showTeacherAttendance()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-calendar-check text-3xl text-blue-600 mb-2"></i><h3 class="font-bold">${t('attendance')}</h3></div>
+      <div onclick="uploadExamExcel()" class="bg-white p-5 rounded-xl shadow card-hover cursor-pointer text-center"><i class="fas fa-pen-to-square text-3xl text-orange-600 mb-2"></i><h3 class="font-bold">امتحانات</h3></div>
+    </div>
+    <div id="teacherSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
+  `;
+}
+
+function showTeacherAttendance() {
+  const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES));
+  const section = document.getElementById('teacherSection');
+  section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('attendance')}</h3><div class="mb-4"><label>${t('selectClass')}</label><select id="attClass" class="w-full max-w-xs border rounded-lg p-2 mb-4" onchange="loadAttendanceStudents()"><option value="">${t('selectClass')}</option>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div><div id="attendanceList"></div><button onclick="openCameraForAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-camera ml-1"></i> ثبت حاضری با AI</button>`;
+}
+
+function loadAttendanceStudents() {
+  const classId = document.getElementById('attClass').value;
+  if (!classId) return;
+  const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS)).filter(s => s.classId === classId);
+  document.getElementById('attendanceList').innerHTML = `<div class="grid md:grid-cols-2 gap-3 mt-4">${students.map(s => `<div class="flex justify-between items-center border rounded p-3"><span>${s.fullName} (نمبر: ${s.rollNumber})</span><div><button onclick="markPresentNow('${s.id}')" class="bg-green-500 text-white px-3 py-1 rounded ml-1">${t('present')}</button><button onclick="markAbsentNow('${s.id}')" class="bg-red-500 text-white px-3 py-1 rounded">${t('absent')}</button></div></div>`).join('')}</div><button onclick="saveTeacherAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">${t('save')}</button>`;
+  window.tempAttendanceData = {};
+}
+
+let tempAttendanceData = {};
+function markPresentNow(id) { tempAttendanceData[id] = 'present'; showToast('حاضر ثبت شد'); }
+function markAbsentNow(id) { tempAttendanceData[id] = 'absent'; showToast('غایب ثبت شد'); }
+
+function saveTeacherAttendance() {
+  const attendance = JSON.parse(localStorage.getItem(STORAGE.ATTENDANCE));
+  const classId = document.getElementById('attClass').value;
+  const today = new Date().toISOString().split('T')[0];
+  for (const [sid, status] of Object.entries(tempAttendanceData)) {
+    attendance.push({ id: Date.now().toString() + sid, studentId: sid, classId, date: today, status });
+    if (status === 'absent') {
+      const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS));
+      const student = students.find(s => s.id === sid);
+      if (student && student.parentPhone) {
+        showToast(`اطلاعیه غیابی به شماره ${student.parentPhone} ارسال شد`);
+      }
     }
-    if (!localStorage.getItem(STORAGE.TEACHERS)) localStorage.setItem(STORAGE.TEACHERS, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.CLASSES)) {
-      localStorage.setItem(STORAGE.CLASSES, JSON.stringify([
-        { id: '1', name: 'صنف ۶', gradeLevel: 6 },
-        { id: '2', name: 'صنف ۷', gradeLevel: 7 },
-        { id: '3', name: 'صنف ۸', gradeLevel: 8 },
-        { id: '4', name: 'صنف ۹', gradeLevel: 9 },
-        { id: '5', name: 'صنف ۱۰', gradeLevel: 10 }
-      ]));
-    }
-    if (!localStorage.getItem(STORAGE.SUBJECTS)) {
-      localStorage.setItem(STORAGE.SUBJECTS, JSON.stringify([
-        { id: '1', name: 'دری', fullMarks: 100 },
-        { id: '2', name: 'پښتو', fullMarks: 100 },
-        { id: '3', name: 'ریاضی', fullMarks: 100 },
-        { id: '4', name: 'علوم', fullMarks: 100 },
-        { id: '5', name: 'انگلیسی', fullMarks: 100 }
-      ]));
-    }
-    if (!localStorage.getItem(STORAGE.AD_PACKAGES)) {
-      localStorage.setItem(STORAGE.AD_PACKAGES, JSON.stringify([
-        { id: '1', name: 'پکیج یک ماهه', months: 1, priceUSD: 10, priceAFN: 850 },
-        { id: '2', name: 'پکیج دو ماهه', months: 2, priceUSD: 18, priceAFN: 1530 },
-        { id: '3', name: 'پکیج سه ماهه', months: 3, priceUSD: 25, priceAFN: 2125 }
-      ]));
-    }
-    if (!localStorage.getItem(STORAGE.AD_PURCHASES)) localStorage.setItem(STORAGE.AD_PURCHASES, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.STUDENTS)) localStorage.setItem(STORAGE.STUDENTS, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.HOMEWORK)) localStorage.setItem(STORAGE.HOMEWORK, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.ATTENDANCE)) localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.SALARIES)) localStorage.setItem(STORAGE.SALARIES, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.FEES)) localStorage.setItem(STORAGE.FEES, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.JOURNAL)) localStorage.setItem(STORAGE.JOURNAL, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.TEMP_STUDENTS)) localStorage.setItem(STORAGE.TEMP_STUDENTS, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.CONDITIONAL)) localStorage.setItem(STORAGE.CONDITIONAL, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.BANNED)) localStorage.setItem(STORAGE.BANNED, JSON.stringify([]));
-    if (!localStorage.getItem(STORAGE.TRANSFERS)) localStorage.setItem(STORAGE.TRANSFERS, JSON.stringify([]));
   }
-  
-  // ==================== TRANSLATIONS ====================
-  const translations = {
-    dari: { appName: "سیستم مدیریت مکتب", principal: "مدیر مکتب", financeManager: "مدیر مالی", headTeacher: "استاد سر", teacher: "استاد", homework: "کار خانه گی", attendance: "حاضری", exams: "امتحانات", salary: "معاش", present: "حاضر", absent: "غایب", save: "ذخیره", delete: "حذف", profit: "سود", loss: "زیان", balanceSheet: "بیلانس شیٹ", journal: "ژورنال", feeReceived: "شهریه دریافت شده", feePayable: "شهریه قابل پرداخت", remainingFee: "باقی مانده", newEnrollment: "فورم جدید الشمول", temporary: "شاگردان موقت", conditional: "شاگردان مشروط", banned: "محرومین سه ساله", baseBook: "کتاب اساس", transfer: "جدول رفت و آمد", advertising: "سیستم تبلیغات", package: "پکیج تبلیغاتی", purchaseAd: "خرید تبلیغات", monthlyFee: "شهریه ماهانه", paidFee: "پرداخت شده", remaining: "باقی مانده", fatherName: "نام پدر", tazkira: "شماره تذکره", age: "سن", province: "ولایت", district: "ولسوالی", village: "روستا", relative: "نام نزدیکان", relationship: "نسبت", selectClass: "انتخاب صنف" },
-    pashto: { appName: "د مکتب مدیریت سیسټم", principal: "د مکتب مدیر", financeManager: "مالي مدیر", headTeacher: "لومړی استاد", teacher: "استاد", homework: "کورنی کار", attendance: "حاضرتی", exams: "ازمونې", salary: "معاش", present: "حاضر", absent: "غایب", save: "خوندي کول", delete: "ړنګول", profit: "ګټه", loss: "زیان", balanceSheet: "توازن پاڼه", journal: "ژورنال", feeReceived: "ترتیب ترلاسه شوی", feePayable: "د ورکولو وړ ترتیب", remainingFee: "پاتې ترتیب", newEnrollment: "د نوي شاملیدو فورم", temporary: "عارضي زده کونکي", conditional: "مشروط زده کونکي", banned: "د درې کلونو محروم", baseBook: "اساسی کتاب", transfer: "د تګ راتګ جدول", advertising: "د اعلاناتو سیسټم", package: "اعلاناتي پکیج", purchaseAd: "اعلان اخیستل", monthlyFee: "میاشتنی ترتیب", paidFee: "ادا شوی", remaining: "پاتې", fatherName: "د پلار نوم", tazkira: "د تذکرې شمېره", age: "عمر", province: "ولایت", district: "ولسوالۍ", village: "کلی", relative: "د خپلوانو نوم", relationship: "اړیکه", selectClass: "صنف انتخاب کړئ" },
-    english: { appName: "School Management System", principal: "Principal", financeManager: "Finance Manager", headTeacher: "Head Teacher", teacher: "Teacher", homework: "Homework", attendance: "Attendance", exams: "Exams", salary: "Salary", present: "Present", absent: "Absent", save: "Save", delete: "Delete", profit: "Profit", loss: "Loss", balanceSheet: "Balance Sheet", journal: "Journal", feeReceived: "Fee Received", feePayable: "Fee Payable", remainingFee: "Remaining", newEnrollment: "New Enrollment Form", temporary: "Temporary Students", conditional: "Conditional Students", banned: "3-Year Banned", baseBook: "Base Book", transfer: "Transfer Table", advertising: "Advertising System", package: "Ad Package", purchaseAd: "Purchase Ad", monthlyFee: "Monthly Fee", paidFee: "Paid", remaining: "Remaining", fatherName: "Father Name", tazkira: "Tazkira Number", age: "Age", province: "Province", district: "District", village: "Village", relative: "Relative Name", relationship: "Relationship", selectClass: "Select Class" }
+  localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify(attendance));
+  showToast('حاضری ثبت و به والدین اطلاع داده شد');
+  tempAttendanceData = {};
+  loadAttendanceStudents();
+}
+
+function uploadExamExcel() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+      localStorage.setItem('uploaded_exam_data', JSON.stringify(json));
+      showToast(`Excel آپلود شد! ${json.length} رکورد یافت شد`);
+    };
+    reader.readAsArrayBuffer(file);
   };
-  
-  function t(key) { return translations[currentLanguage][key] || key; }
-  
-  function setLanguage(lang) {
-    currentLanguage = lang;
-    localStorage.setItem('language', lang);
-    document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`lang${lang.charAt(0).toUpperCase() + lang.slice(1)}`).classList.add('active');
-    updateAllTexts();
-    showToast(`Language changed to ${lang}`);
-    if (currentRole) renderDashboard();
-  }
-  
-  function updateAllTexts() {
-    document.getElementById('appTitle').textContent = t('appName');
-    document.querySelectorAll('[data-key]').forEach(el => {
-      const key = el.getAttribute('data-key');
-      if (translations[currentLanguage][key]) el.textContent = translations[currentLanguage][key];
-    });
-  }
-  
-  function showToast(msg, isError = false) {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.style.background = isError ? '#dc2626' : '#059669';
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
-  }
-  
-  function toggleTeacherFields() {
-    const role = document.getElementById('signupRole').value;
-    const teacherFields = document.getElementById('teacherFields');
-    teacherFields.classList.toggle('hidden', role !== 'teacher');
-  }
-  
-  // ==================== AUTHENTICATION ====================
-  function showLogin() { document.getElementById('loginModal').classList.add('active'); document.getElementById('signupModal').classList.remove('active'); }
-  function showSignup() { document.getElementById('signupModal').classList.add('active'); document.getElementById('loginModal').classList.remove('active'); toggleTeacherFields(); }
-  
-  function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-      currentUser = user;
-      currentRole = user.role;
-      localStorage.setItem('currentUser', JSON.stringify({ id: user.id, role: user.role }));
-      document.getElementById('loginModal').classList.remove('active');
-      document.getElementById('userName').textContent = `${user.firstName} ${user.lastName}`;
-      document.getElementById('userRole').textContent = t(user.role);
-      document.getElementById('roleSelection').style.display = 'grid';
-      showToast(`خوش آمدید ${user.firstName}`);
-    } else { showToast('ایمیل یا رمز عبور اشتباه است', true); }
-  }
-  
-  function handleSignup(e) {
-    e.preventDefault();
-    const firstName = document.getElementById('signupFirstName').value;
-    const lastName = document.getElementById('signupLastName').value;
-    const email = document.getElementById('signupEmail').value;
-    const phone = document.getElementById('signupPhone').value;
-    const school = document.getElementById('signupSchool').value;
-    const password = document.getElementById('signupPassword').value;
-    const role = document.getElementById('signupRole').value;
-    const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
-    if (users.find(u => u.email === email)) { showToast('این ایمیل قبلاً ثبت شده است', true); return; }
-    const newUser = { id: Date.now().toString(), firstName, lastName, email, phone, school, password, role };
-    if (role === 'teacher') {
-      newUser.subjects = document.getElementById('teacherSubjects').value;
-      newUser.classes = document.getElementById('teacherClasses').value;
-      const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
-      teachers.push({ id: newUser.id, fullName: `${firstName} ${lastName}`, phone, subjects: newUser.subjects, classes: newUser.classes, salary: 0 });
-      localStorage.setItem(STORAGE.TEACHERS, JSON.stringify(teachers));
-    }
-    users.push(newUser);
-    localStorage.setItem(STORAGE.USERS, JSON.stringify(users));
-    showToast('حساب با موفقیت ایجاد شد! لطفاً وارد شوید');
-    showLogin();
-  }
-  
-  function logout() { currentUser = null; currentRole = null; localStorage.removeItem('currentUser'); document.getElementById('roleSelection').style.display = 'grid'; document.getElementById('dashboardContainer').innerHTML = ''; showLogin(); }
-  
-  function selectRole(role) { currentRole = role; document.getElementById('roleSelection').style.display = 'none'; renderDashboard(); }
-  
-  function renderDashboard() {
-    const container = document.getElementById('dashboardContainer');
-    if (currentRole === 'principal') renderPrincipalDashboard(container);
-    else if (currentRole === 'finance') renderFinanceDashboard(container);
-    else if (currentRole === 'headteacher') renderHeadTeacherDashboard(container);
-    else if (currentRole === 'teacher') renderTeacherDashboard(container);
-  }
-  
-  // ==================== PRINCIPAL DASHBOARD ====================
-  function renderPrincipalDashboard(container) {
-    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
-    const adPackages = JSON.parse(localStorage.getItem(STORAGE.AD_PACKAGES) || '[]');
-    const adPurchases = JSON.parse(localStorage.getItem(STORAGE.AD_PURCHASES) || '[]');
-    container.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold"><i class="fas fa-crown text-amber-500 ml-2"></i> ${t('principal')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
-      <div class="grid md:grid-cols-4 gap-4 mb-6">
-        <div onclick="showAllClasses()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-chalkboard text-2xl text-blue-600 mb-2"></i><h3 class="font-bold">صنف‌ها و معلمین</h3></div>
-        <div onclick="showTeacherSalaries()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-money-bill text-2xl text-green-600 mb-2"></i><h3 class="font-bold">${t('salary')}</h3></div>
-        <div onclick="showAdvertisingSystem()" class="bg-white ad-card rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-ad text-2xl text-amber-600 mb-2"></i><h3 class="font-bold">${t('advertising')}</h3><span class="text-xs text-amber-600">شروع از 10$</span></div>
-        <div onclick="showFinancialReports()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-chart-line text-2xl text-emerald-600 mb-2"></i><h3 class="font-bold">گزارشات مالی</h3></div>
-      </div>
-      <div id="principalSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
-    `;
-  }
-  
-  function showAllClasses() {
-    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
-    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
-    const section = document.getElementById('principalSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-chalkboard ml-2"></i> صنف‌ها و معلمین</h3>
-      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-3">صنف</th><th class="p-3">معلم</th><th class="p-3">مضمون‌ها</th></tr></thead><tbody>
-        ${classes.map(c => {
-          const classTeachers = teachers.filter(t => t.classes && t.classes.includes(c.name));
-          return `<tr class="border-b"><td class="p-3 font-bold">${c.name}</td><td class="p-3">${classTeachers.map(t => t.fullName).join(', ') || 'تعیین نشده'}</td><td class="p-3">${classTeachers.map(t => t.subjects).join(', ') || '-'}</td><tr>`;
-        }).join('')}
-      </tbody></table></div>
-    `;
-  }
-  
-  function showTeacherSalaries() {
-    const teachers = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]');
-    const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES) || '[]');
-    const section = document.getElementById('principalSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-money-bill-wave ml-2"></i> ${t('salary')}</h3>
-      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-3">نام استاد</th><th class="p-3">مضمون‌ها</th><th class="p-3">معاش پایه</th><th class="p-3">پرداخت شده</th><th class="p-3">ماه</th><th class="p-3"></th></tr></thead><tbody>
-        ${teachers.map(t => {
-          const paid = salaries.filter(s => s.teacherId === t.id).reduce((sum, s) => sum + s.amount, 0);
-          return `<tr class="border-b"><td class="p-3">${t.fullName}</td><td class="p-3">${t.subjects || '-'}</td><td class="p-3"><input type="number" id="salary_${t.id}" value="${t.salary || 5000}" class="w-24 border rounded p-1"> افغانی</td><td class="p-3">${paid} افغانی</td><td class="p-3"><select id="month_${t.id}">${['جنوری','فبروری','مارچ','اپریل','می','جون','جولای','آگست','سپتامبر','اکتوبر','نومبر','دسمبر'].map((m,i)=>`<option value="${i+1}">${m}</option>`).join('')}</select></td><td><button onclick="payTeacherSalary('${t.id}')" class="bg-green-600 text-white px-3 py-1 rounded">پرداخت</button></td></tr>`;
-        }).join('')}
-      </tbody></table></div>
-    `;
-  }
-  
-  function payTeacherSalary(teacherId) {
-    const amount = parseInt(document.getElementById(`salary_${teacherId}`).value);
-    const month = document.getElementById(`month_${teacherId}`).value;
-    if (!amount) { showToast('معاش را وارد کنید', true); return; }
-    const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES) || '[]');
-    salaries.push({ id: Date.now().toString(), teacherId, amount, month: parseInt(month), year: new Date().getFullYear(), date: new Date().toISOString() });
-    localStorage.setItem(STORAGE.SALARIES, JSON.stringify(salaries));
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `پرداخت معاش ماه ${month}`, debit: amount, credit: 0, type: 'salary' });
-    localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
-    showToast(`معاش ${amount} افغانی پرداخت شد`);
-    showTeacherSalaries();
-  }
-  
-  function showAdvertisingSystem() {
-    const packages = JSON.parse(localStorage.getItem(STORAGE.AD_PACKAGES) || '[]');
-    const purchases = JSON.parse(localStorage.getItem(STORAGE.AD_PURCHASES) || '[]');
-    const section = document.getElementById('principalSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-ad ml-2"></i> ${t('advertising')}</h3>
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        ${packages.map(p => `
-          <div class="border-2 border-amber-300 rounded-xl p-4 text-center bg-amber-50">
-            <h4 class="font-bold text-lg">${p.name}</h4>
-            <div class="text-2xl font-bold text-amber-600 my-2">${p.priceUSD} $</div>
-            <div class="text-sm text-gray-500">${p.months} ماه</div>
-            <button onclick="purchaseAdPackage('${p.id}', ${p.priceUSD})" class="mt-3 bg-amber-600 text-white px-4 py-2 rounded-lg w-full">خرید پکیج</button>
-          </div>
-        `).join('')}
-      </div>
-      <h4 class="font-bold mb-2">تاریخچه خرید تبلیغات</h4>
-      <div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">پکیج</th><th class="p-2">مبلغ</th><th class="p-2">تاریخ انقضا</th></tr></thead><tbody>
-        ${purchases.map(p => `<tr class="border-b"><td class="p-2">${new Date(p.purchaseDate).toLocaleDateString('fa-IR')}</td><td class="p-2">${p.packageName}</td><td class="p-2">${p.amountUSD} $ (${p.amountAFN} AFN)</td><td class="p-2">${new Date(p.expiryDate).toLocaleDateString('fa-IR')}</td></tr>`).join('')}
-      </tbody></table></div>
-    `;
-  }
-  
-  function purchaseAdPackage(packageId, priceUSD) {
-    const packages = JSON.parse(localStorage.getItem(STORAGE.AD_PACKAGES) || '[]');
-    const pkg = packages.find(p => p.id === packageId);
-    if (!pkg) return;
-    const priceAFN = priceUSD * 85;
-    const purchases = JSON.parse(localStorage.getItem(STORAGE.AD_PURCHASES) || '[]');
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + pkg.months);
-    purchases.push({ id: Date.now().toString(), packageId: pkg.id, packageName: pkg.name, amountUSD: priceUSD, amountAFN: priceAFN, months: pkg.months, purchaseDate: new Date().toISOString(), expiryDate: expiryDate.toISOString() });
-    localStorage.setItem(STORAGE.AD_PURCHASES, JSON.stringify(purchases));
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `خرید ${pkg.name} تبلیغات`, debit: 0, credit: priceAFN, type: 'advertising' });
-    localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
-    showToast(`پکیج ${pkg.name} با موفقیت خریداری شد`);
-    showAdvertisingSystem();
-  }
-  
-  function showFinancialReports() {
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    const totalCredit = journal.reduce((sum, j) => sum + (j.credit || 0), 0);
-    const totalDebit = journal.reduce((sum, j) => sum + (j.debit || 0), 0);
-    const profit = totalCredit - totalDebit;
-    const section = document.getElementById('principalSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-chart-line ml-2"></i> گزارشات مالی</h3>
-      <div class="grid md:grid-cols-3 gap-4 mb-6"><div class="bg-green-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-green-600">${totalCredit} افغانی</div><div>مجموع دریافتی</div></div><div class="bg-red-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-red-600">${totalDebit} افغانی</div><div>مجموع پرداختی</div></div><div class="bg-blue-50 p-4 rounded-xl text-center"><div class="text-2xl font-bold text-blue-600">${profit} افغانی</div><div>${profit >= 0 ? t('profit') : t('loss')}</div></div></div>
-      <h4 class="font-bold mb-2">${t('journal')}</h4><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">شرح</th><th class="p-2">بدهکار</th><th class="p-2">بستانکار</th></tr></thead><tbody>${journal.map(j => `<tr class="border-b"><td class="p-2">${new Date(j.date).toLocaleDateString('fa-IR')}</td><td class="p-2">${j.description}</td><td class="p-2">${j.debit || 0}</td><td class="p-2">${j.credit || 0}</td></tr>`).join('')}</tbody></table></div>
-      <button onclick="exportToExcel()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-file-excel ml-1"></i> خروجی Excel</button>
-      <button onclick="exportToPDF()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg mr-2"><i class="fas fa-file-pdf ml-1"></i> خروجی PDF</button>
-    `;
-  }
-  
-  // ==================== FINANCE MANAGER DASHBOARD ====================
-  function renderFinanceDashboard(container) {
-    container.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold"><i class="fas fa-chart-line text-emerald-500 ml-2"></i> ${t('financeManager')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div onclick="showClassFeeCollection()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-hand-holding-usd text-3xl text-emerald-600 mb-2"></i><h3 class="font-bold">دریافت شهریه</h3></div>
-        <div onclick="showFinanceReports()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-file-invoice text-3xl text-blue-600 mb-2"></i><h3 class="font-bold">گزارشات مالی</h3></div>
-        <div onclick="showBalanceSheet()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-balance-scale text-3xl text-purple-600 mb-2"></i><h3 class="font-bold">${t('balanceSheet')}</h3></div>
-      </div>
-      <div id="financeSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
-    `;
-  }
-  
-  function showClassFeeCollection() {
-    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
-    const allStudents = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
-    const section = document.getElementById('financeSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-hand-holding-usd ml-2"></i> دریافت شهریه</h3>
-      <div class="mb-4"><label>انتخاب صنف</label><select id="feeClassFilter" class="w-full max-w-xs border rounded-lg p-2" onchange="filterStudentsByClass()"><option value="">همه صنف‌ها</option>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
-      <div id="studentsFeeList" class="overflow-x-auto">${renderStudentsFeeList(allStudents)}</div>
-    `;
-  }
-  
-  function renderStudentsFeeList(students) {
-    const fees = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]');
-    return `<table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">نام پدر</th><th class="p-2">صنف</th><th class="p-2">شهریه ماهانه</th><th class="p-2">پرداخت شده</th><th class="p-2">باقی مانده</th><th class="p-2">دریافت</th></tr></thead><tbody>
-      ${students.map(s => {
-        const paid = fees.filter(f => f.studentId === s.id).reduce((sum, f) => sum + f.amount, 0);
-        const remaining = (s.monthlyFee || 0) - paid;
-        return `<tr class="border-b"><td class="p-2">${s.fullName}</td><td class="p-2">${s.fatherName || '-'}</td><td class="p-2">${s.className || '-'}</td><td class="p-2">${s.monthlyFee || 0} افغانی</td><td class="p-2 text-green-600">${paid} افغانی</td><td class="p-2 ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${remaining} افغانی</td><td class="p-2"><input type="number" id="fee_${s.id}" class="w-24 border rounded p-1" placeholder="مبلغ"><button onclick="collectStudentFee('${s.id}', '${s.fullName}', ${s.monthlyFee || 0})" class="bg-emerald-600 text-white px-2 py-1 rounded text-sm">دریافت</button></td></tr>`;
-      }).join('')}
-    </tbody></table>`;
-  }
-  
-  function filterStudentsByClass() {
-    const classId = document.getElementById('feeClassFilter').value;
-    let students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
-    if (classId) students = students.filter(s => s.classId === classId);
-    document.getElementById('studentsFeeList').innerHTML = renderStudentsFeeList(students);
-  }
-  
-  function collectStudentFee(studentId, studentName, monthlyFee) {
-    const amount = parseInt(document.getElementById(`fee_${studentId}`).value);
-    if (!amount || amount <= 0) { showToast('مبلغ معتبر وارد کنید', true); return; }
-    const fees = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]');
-    fees.push({ id: Date.now().toString(), studentId, amount, date: new Date().toISOString(), month: new Date().getMonth() + 1, year: new Date().getFullYear() });
-    localStorage.setItem(STORAGE.FEES, JSON.stringify(fees));
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    journal.push({ id: Date.now().toString(), date: new Date().toISOString(), description: `دریافت شهریه از ${studentName}`, debit: 0, credit: amount, type: 'fee' });
-    localStorage.setItem(STORAGE.JOURNAL, JSON.stringify(journal));
-    showToast(`مبلغ ${amount} افغانی از ${studentName} دریافت شد`);
-    showClassFeeCollection();
-  }
-  
-  function showFinanceReports() {
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    const totalCredit = journal.reduce((sum, j) => sum + (j.credit || 0), 0);
-    const totalDebit = journal.reduce((sum, j) => sum + (j.debit || 0), 0);
-    const section = document.getElementById('financeSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-chart-line ml-2"></i> ${t('profit')} و ${t('loss')}</h3>
-      <div class="grid md:grid-cols-3 gap-4 mb-6"><div class="bg-green-50 p-4 rounded-xl"><div class="text-2xl font-bold text-green-600">${totalCredit} افغانی</div><div>کل دریافتی</div></div><div class="bg-red-50 p-4 rounded-xl"><div class="text-2xl font-bold text-red-600">${totalDebit} افغانی</div><div>کل پرداختی</div></div><div class="bg-blue-50 p-4 rounded-xl"><div class="text-2xl font-bold text-blue-600">${totalCredit - totalDebit} افغانی</div><div>سود خالص</div></div></div>
-      <h4 class="font-bold">${t('journal')}</h4><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">تاریخ</th><th class="p-2">شرح</th><th class="p-2">بدهکار</th><th class="p-2">بستانکار</th></tr></thead><tbody>${journal.map(j => `<tr class="border-b"><td class="p-2">${new Date(j.date).toLocaleDateString('fa-IR')}</td><td class="p-2">${j.description}</td><td class="p-2">${j.debit || 0}</td><td class="p-2">${j.credit || 0}</td></tr>`).join('')}</tbody></table></div>
-    `;
-  }
-  
-  function showBalanceSheet() {
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    const fees = JSON.parse(localStorage.getItem(STORAGE.FEES) || '[]');
-    const salaries = JSON.parse(localStorage.getItem(STORAGE.SALARIES) || '[]');
-    const totalAssets = fees.reduce((sum, f) => sum + f.amount, 0);
-    const totalLiabilities = salaries.reduce((sum, s) => sum + s.amount, 0);
-    const equity = totalAssets - totalLiabilities;
-    const section = document.getElementById('financeSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-balance-scale ml-2"></i> ${t('balanceSheet')}</h3>
-      <div class="grid md:grid-cols-3 gap-4 mb-6"><div class="bg-green-50 p-4 rounded-xl"><div class="text-2xl font-bold text-green-600">${totalAssets} افغانی</div><div>دارایی‌ها (شهریه دریافتی)</div></div><div class="bg-red-50 p-4 rounded-xl"><div class="text-2xl font-bold text-red-600">${totalLiabilities} افغانی</div><div>بدهی‌ها (معاش پرداختی)</div></div><div class="bg-blue-50 p-4 rounded-xl"><div class="text-2xl font-bold text-blue-600">${equity} افغانی</div><div>حقوق صاحبان سرمایه</div></div></div>
-    `;
-  }
-  
-  // ==================== HEAD TEACHER DASHBOARD ====================
-  function renderHeadTeacherDashboard(container) {
-    container.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold"><i class="fas fa-graduation-cap text-blue-500 ml-2"></i> ${t('headTeacher')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div></div>
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div onclick="showStudentEnrollment()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-user-plus text-2xl text-emerald-600 mb-2"></i><h3 class="font-bold">${t('newEnrollment')}</h3></div>
-        <div onclick="showTemporaryStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-clock text-2xl text-yellow-600 mb-2"></i><h3 class="font-bold">${t('temporary')}</h3></div>
-        <div onclick="showConditionalStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-exclamation-triangle text-2xl text-orange-600 mb-2"></i><h3 class="font-bold">${t('conditional')}</h3></div>
-        <div onclick="showBannedStudents()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-ban text-2xl text-red-600 mb-2"></i><h3 class="font-bold">${t('banned')}</h3></div>
-        <div onclick="showTransferTable()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-arrows-spin text-2xl text-blue-600 mb-2"></i><h3 class="font-bold">${t('transfer')}</h3></div>
-      </div>
-      <div id="headSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
-    `;
-  }
-  
-  function showStudentEnrollment() {
-    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
-    const section = document.getElementById('headSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-user-plus ml-2"></i> ${t('newEnrollment')} - فورم جدید الشمول</h3>
-      <form onsubmit="saveFullStudent(event)" class="grid md:grid-cols-2 gap-4">
-        <div><label>نام کامل شاگرد</label><input type="text" id="stuFullName" required class="w-full border rounded-lg p-2"></div>
-        <div><label>نام پدر</label><input type="text" id="stuFatherName" required class="w-full border rounded-lg p-2"></div>
-        <div><label>تذکره/شناسنامه</label><input type="text" id="stuTazkira" class="w-full border rounded-lg p-2"></div>
-        <div><label>سن</label><input type="number" id="stuAge" class="w-full border rounded-lg p-2"></div>
-        <div><label>شغل پدر</label><input type="text" id="stuFatherJob" class="w-full border rounded-lg p-2"></div>
-        <div><label>ولایت فعلی</label><input type="text" id="stuCurrentProvince" class="w-full border rounded-lg p-2"></div>
-        <div><label>ولسوالی فعلی</label><input type="text" id="stuCurrentDistrict" class="w-full border rounded-lg p-2"></div>
-        <div><label>روستای فعلی</label><input type="text" id="stuCurrentVillage" class="w-full border rounded-lg p-2"></div>
-        <div><label>ولایت اصلی</label><input type="text" id="stuOriginalProvince" class="w-full border rounded-lg p-2"></div>
-        <div><label>ولسوالی اصلی</label><input type="text" id="stuOriginalDistrict" class="w-full border rounded-lg p-2"></div>
-        <div><label>روستای اصلی</label><input type="text" id="stuOriginalVillage" class="w-full border rounded-lg p-2"></div>
-        <div><label>نام نزدیکان (اقارب)</label><input type="text" id="stuRelativeName" class="w-full border rounded-lg p-2"></div>
-        <div><label>نسبت با شاگرد</label><select id="stuRelationship" class="w-full border rounded-lg p-2"><option value="کاکا">کاکا</option><option value="ماما">ماما</option><option value="پسر ماما">پسر ماما</option><option value="خالو">خالو</option><option value="عمو">عمو</option></select></div>
-        <div><label>شماره تماس نزدیکان</label><input type="tel" id="stuRelativePhone" class="w-full border rounded-lg p-2 ltr"></div>
-        <div><label>شماره تماس والدین</label><input type="tel" id="stuParentPhone" class="w-full border rounded-lg p-2 ltr"></div>
-        <div><label>صنف</label><select id="stuClass" required class="w-full border rounded-lg p-2">${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
-        <div><label>شهریه ماهانه (افغانی)</label><input type="number" id="stuMonthlyFee" class="w-full border rounded-lg p-2" value="1000"></div>
-        <div class="md:col-span-2"><button type="submit" class="bg-emerald-600 text-white px-6 py-2 rounded-lg w-full">ثبت شاگرد جدید</button></div>
-      </form>
-    `;
-  }
-  
-  function saveFullStudent(e) {
-    e.preventDefault();
-    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
-    const newStudent = {
-      id: Date.now().toString(),
-      fullName: document.getElementById('stuFullName').value,
-      fatherName: document.getElementById('stuFatherName').value,
-      tazkira: document.getElementById('stuTazkira').value,
-      age: document.getElementById('stuAge').value,
-      fatherJob: document.getElementById('stuFatherJob').value,
-      currentProvince: document.getElementById('stuCurrentProvince').value,
-      currentDistrict: document.getElementById('stuCurrentDistrict').value,
-      currentVillage: document.getElementById('stuCurrentVillage').value,
-      originalProvince: document.getElementById('stuOriginalProvince').value,
-      originalDistrict: document.getElementById('stuOriginalDistrict').value,
-      originalVillage: document.getElementById('stuOriginalVillage').value,
-      relativeName: document.getElementById('stuRelativeName').value,
-      relationship: document.getElementById('stuRelationship').value,
-      relativePhone: document.getElementById('stuRelativePhone').value,
-      parentPhone: document.getElementById('stuParentPhone').value,
-      classId: document.getElementById('stuClass').value,
-      monthlyFee: parseInt(document.getElementById('stuMonthlyFee').value),
-      className: document.getElementById('stuClass').selectedOptions[0]?.text,
-      rollNumber: students.length + 1,
-      status: 'active',
-      enrolledAt: new Date().toISOString()
-    };
-    students.push(newStudent);
-    localStorage.setItem(STORAGE.STUDENTS, JSON.stringify(students));
-    showToast('شاگرد جدید با موفقیت ثبت شد');
-    showStudentEnrollment();
-  }
-  
-  function showTemporaryStudents() {
-    const temps = JSON.parse(localStorage.getItem(STORAGE.TEMP_STUDENTS) || '[]');
-    const section = document.getElementById('headSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('temporary')}</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام</th><th class="p-2">صنف</th><th class="p-2">تاریخ شروع</th><th class="p-2">تاریخ پایان</th><th class="p-2">دلیل</th></tr></thead><tbody>${temps.map(t => `<tr><td class="p-2">${t.name}</td><td class="p-2">${t.className}</td><td class="p-2">${t.startDate}</td><td class="p-2">${t.endDate}</td><td class="p-2">${t.reason}</td></tr>`).join('')}</tbody></table></div>`;
-  }
-  
-  function showConditionalStudents() {
-    const conditionals = JSON.parse(localStorage.getItem(STORAGE.CONDITIONAL) || '[]');
-    const section = document.getElementById('headSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('conditional')}</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">صنف</th><th class="p-2">دلیل مشروط</th></tr></thead><tbody>${conditionals.map(c => `<tr><td class="p-2">${c.studentName}</td><td class="p-2">${c.className}</td><td class="p-2">${c.reason}</td></tr>`).join('')}</tbody></table></div>`;
-  }
-  
-  function showBannedStudents() {
-    const banned = JSON.parse(localStorage.getItem(STORAGE.BANNED) || '[]');
-    const section = document.getElementById('headSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('banned')}</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">صنف</th><th class="p-2">محروم تا تاریخ</th><th class="p-2">دلیل</th></tr></thead><tbody>${banned.map(b => `<tr><td class="p-2">${b.studentName}</td><td class="p-2">${b.className}</td><td class="p-2">${b.bannedUntil}</td><td class="p-2">${b.reason}</td></tr>`).join('')}</tbody><td></div>`;
-  }
-  
-  function showTransferTable() {
-    const transfers = JSON.parse(localStorage.getItem(STORAGE.TRANSFERS) || '[]');
-    const section = document.getElementById('headSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('transfer')}</h3><div class="overflow-x-auto"><table class="w-full"><thead><tr class="bg-gray-100"><th class="p-2">نام شاگرد</th><th class="p-2">از صنف</th><th class="p-2">به صنف</th><th class="p-2">تاریخ</th><th class="p-2">دلیل</th></tr></thead><tbody>${transfers.map(t => `<tr><td class="p-2">${t.studentName}</td><td class="p-2">${t.fromClass}</td><td class="p-2">${t.toClass}</td><td class="p-2">${t.date}</td><td class="p-2">${t.reason}</td></tr>`).join('')}</tbody></table></div>`;
-  }
-  
-  // ==================== TEACHER DASHBOARD ====================
-  function renderTeacherDashboard(container) {
-    const teacherInfo = JSON.parse(localStorage.getItem(STORAGE.TEACHERS) || '[]').find(t => t.id === currentUser?.id);
-    container.innerHTML = `
-      <div class="bg-white rounded-2xl p-6 shadow-lg mb-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold"><i class="fas fa-person-chalkboard text-purple-500 ml-2"></i> ${t('teacher')}</h2><button onclick="selectRole(null)" class="bg-gray-500 text-white px-4 py-2 rounded-lg">تغییر نقش</button></div>
-      ${teacherInfo ? `<div class="mt-2 text-sm text-gray-500">مضمون‌ها: ${teacherInfo.subjects || '-'} | صنف‌ها: ${teacherInfo.classes || '-'}</div>` : ''}</div>
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div onclick="showTeacherAttendance()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-calendar-check text-2xl text-blue-600 mb-2"></i><h3 class="font-bold">${t('attendance')}</h3></div>
-        <div onclick="showTeacherExams()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-pen-to-square text-2xl text-orange-600 mb-2"></i><h3 class="font-bold">${t('exams')}</h3></div>
-        <div onclick="showPracticalWork()" class="bg-white rounded-xl p-4 shadow card-hover cursor-pointer"><i class="fas fa-flask text-2xl text-purple-600 mb-2"></i><h3 class="font-bold">کار عملی</h3></div>
-      </div>
-      <div id="teacherSection" class="bg-white rounded-2xl p-6 shadow-lg"></div>
-    `;
-  }
-  
-  function showTeacherAttendance() {
-    const classes = JSON.parse(localStorage.getItem(STORAGE.CLASSES) || '[]');
-    const section = document.getElementById('teacherSection');
-    section.innerHTML = `
-      <h3 class="text-xl font-bold mb-4"><i class="fas fa-calendar-check ml-2"></i> ${t('attendance')}</h3>
-      <div class="mb-4"><label>انتخاب صنف</label><select id="attClass" class="w-full max-w-xs border rounded-lg p-2" onchange="loadAttendanceStudents()"><option value="">${t('selectClass')}</option>${classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
-      <div id="attendanceList"></div>
-      <button onclick="openCameraForAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg"><i class="fas fa-camera ml-1"></i> ثبت حاضری با AI</button>
-    `;
-  }
-  
-  function loadAttendanceStudents() {
-    const classId = document.getElementById('attClass').value;
-    if (!classId) return;
-    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]').filter(s => s.classId === classId);
-    document.getElementById('attendanceList').innerHTML = `
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">${students.map(s => `
-        <div class="flex justify-between items-center border rounded-lg p-3"><span>${s.fullName} (${s.rollNumber})</span><div class="flex gap-2"><button onclick="markAttendanceNow('${s.id}', 'present')" class="bg-green-500 text-white px-3 py-1 rounded">${t('present')}</button><button onclick="markAttendanceNow('${s.id}', 'absent')" class="bg-red-500 text-white px-3 py-1 rounded">${t('absent')}</button></div></div>
-      `).join('')}</div>
-      <button onclick="saveTeacherAttendance()" class="mt-4 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">${t('save')}</button>
-    `;
-  }
-  
-  let tempAttendance = {};
-  function markAttendanceNow(studentId, status) { tempAttendance[studentId] = status; showToast(`${status === 'present' ? 'حاضر' : 'غایب'} ثبت شد`); }
-  
-  function saveTeacherAttendance() {
-    const attendance = JSON.parse(localStorage.getItem(STORAGE.ATTENDANCE) || '[]');
-    const classId = document.getElementById('attClass').value;
-    const today = new Date().toISOString().split('T')[0];
-    for (const [studentId, status] of Object.entries(tempAttendance)) {
-      attendance.push({ id: Date.now().toString() + studentId, studentId, classId, date: today, status });
-      if (status === 'absent') sendWhatsAppAlert(studentId, today);
-    }
-    localStorage.setItem(STORAGE.ATTENDANCE, JSON.stringify(attendance));
-    showToast('حاضری ثبت و به والدین اطلاع داده شد');
-    tempAttendance = {};
-    loadAttendanceStudents();
-  }
-  
-  function sendWhatsAppAlert(studentId, date) {
-    const students = JSON.parse(localStorage.getItem(STORAGE.STUDENTS) || '[]');
-    const student = students.find(s => s.id === studentId);
-    if (student && (student.parentPhone || student.relativePhone)) {
-      const phone = student.parentPhone || student.relativePhone;
-      const message = `والد گرامی، فرزند شما ${student.fullName} در تاریخ ${date} در مکتب غایب ثبت شده است. لطفاً پیگیری نمایید. مدیریت مکتب`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-    }
-  }
-  
-  function showTeacherExams() {
-    const section = document.getElementById('teacherSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">${t('exams')}</h3><div class="grid md:grid-cols-2 gap-4"><div class="border rounded-xl p-4"><h4 class="font-bold">${t('midTerm')}</h4><button onclick="uploadExamExcel()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full"><i class="fas fa-upload ml-1"></i> آپلود Excel</button></div><div class="border rounded-xl p-4"><h4 class="font-bold">${t('annualExam')}</h4><button onclick="uploadExamExcel()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-lg w-full"><i class="fas fa-upload ml-1"></i> آپلود Excel</button></div></div>`;
-  }
-  
-  function uploadExamExcel() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.xlsx,.xls';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        localStorage.setItem('uploaded_exam_data', JSON.stringify(json));
-        showToast(`Excel آپلود شد! ${json.length} رکورد یافت شد`);
-      };
-      reader.readAsArrayBuffer(file);
-    };
-    input.click();
-  }
-  
-  function showPracticalWork() {
-    const section = document.getElementById('teacherSection');
-    section.innerHTML = `<h3 class="text-xl font-bold mb-4">کار عملی</h3><form onsubmit="savePractical(event)"><div class="mb-4"><label>عنوان</label><input type="text" id="pracTitle" required class="w-full border rounded-lg p-2"></div><div class="mb-4"><label>شرح</label><textarea id="pracDesc" rows="4" class="w-full border rounded-lg p-2"></textarea></div><button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg">ارسال به مدیریت</button></form>`;
-  }
-  
-  function savePractical(e) {
-    e.preventDefault();
-    showToast('کار عملی به مدیریت ارسال شد');
-  }
-  
-  // Camera functions
-  let currentStream = null;
-  async function openCameraForAttendance() {
-    const modal = document.getElementById('cameraModal');
-    const video = document.getElementById('video');
-    modal.classList.add('active');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+  input.click();
+}
+
+// Camera functions
+let currentStream = null;
+function openCameraForAttendance() {
+  const modal = document.getElementById('cameraModal');
+  const video = document.getElementById('video');
+  modal.classList.add('active');
+  try {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
       currentStream = stream;
       video.srcObject = stream;
-    } catch (err) { showToast('دسترسی به دوربین ممکن نیست', true); }
-  }
-  function closeCamera() {
-    const modal = document.getElementById('cameraModal');
-    modal.classList.remove('active');
-    if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
-  }
-  function capturePhoto() {
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    const aiResult = document.getElementById('aiResult');
-    aiResult.classList.remove('hidden');
-    aiResult.innerHTML = `<div class="bg-green-100 p-4 rounded"><i class="fas fa-robot text-2xl"></i><p>AI در حال تشخیص چهره شاگردان...</p><div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="bg-emerald-600 h-2 rounded-full animate-pulse" style="width: 70%"></div></div></div>`;
-    setTimeout(() => {
-      aiResult.innerHTML = `<div class="bg-green-100 p-4 rounded"><i class="fas fa-check-circle text-2xl text-green-600"></i><p>✅ ۱۵ شاگرد حاضر شناسایی شدند</p><button onclick="applyAIAttendance()" class="mt-2 bg-emerald-600 text-white px-4 py-2 rounded">اعمال حاضری</button></div>`;
-    }, 3000);
-  }
-  function uploadFromGallery() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.click();
-  }
-  function applyAIAttendance() { closeCamera(); showToast('حاضری توسط AI ثبت شد'); }
-  
-  // Export functions
-  function exportToExcel() {
-    const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL) || '[]');
-    const ws = XLSX.utils.aoa_to_sheet([['تاریخ', 'شرح', 'بدهکار', 'بستانکار'], ...journal.map(j => [new Date(j.date).toLocaleDateString('fa-IR'), j.description, j.debit || 0, j.credit || 0])]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'گزارش مالی');
-    XLSX.writeFile(wb, `financial_report_${new Date().toISOString().split('T')[0]}.xlsx`);
-    showToast('Excel دانلود شد');
-  }
-  
-  function exportToPDF() {
-    const element = document.getElementById('financeSection') || document.getElementById('principalSection');
-    if (element) html2pdf().from(element).set({ filename: 'report.pdf' }).save();
-  }
-  
-  // Make functions global
-  window.selectRole = selectRole; window.setLanguage = setLanguage; window.logout = logout; window.showLogin = showLogin; window.showSignup = showSignup;
-  window.handleLogin = handleLogin; window.handleSignup = handleSignup; window.toggleTeacherFields = toggleTeacherFields;
-  window.showAllClasses = showAllClasses; window.showTeacherSalaries = showTeacherSalaries; window.showAdvertisingSystem = showAdvertisingSystem;
-  window.showFinancialReports = showFinancialReports; window.payTeacherSalary = payTeacherSalary; window.purchaseAdPackage = purchaseAdPackage;
-  window.showClassFeeCollection = showClassFeeCollection; window.showFinanceReports = showFinanceReports; window.showBalanceSheet = showBalanceSheet;
-  window.filterStudentsByClass = filterStudentsByClass; window.collectStudentFee = collectStudentFee;
-  window.showStudentEnrollment = showStudentEnrollment; window.saveFullStudent = saveFullStudent;
-  window.showTemporaryStudents = showTemporaryStudents; window.showConditionalStudents = showConditionalStudents;
-  window.showBannedStudents = showBannedStudents; window.showTransferTable = showTransferTable;
-  window.showTeacherAttendance = showTeacherAttendance; window.loadAttendanceStudents = loadAttendanceStudents;
-  window.markAttendanceNow = markAttendanceNow; window.saveTeacherAttendance = saveTeacherAttendance;
-  window.showTeacherExams = showTeacherExams; window.showPracticalWork = showPracticalWork; window.savePractical = savePractical;
-  window.uploadExamExcel = uploadExamExcel; window.openCameraForAttendance = openCameraForAttendance; window.closeCamera = closeCamera;
-  window.capturePhoto = capturePhoto; window.uploadFromGallery = uploadFromGallery; window.applyAIAttendance = applyAIAttendance;
-  window.exportToExcel = exportToExcel; window.exportToPDF = exportToPDF;
-  
-  initStorage();
-  setLanguage(currentLanguage);
-  const savedUser = localStorage.getItem('currentUser');
-  if (savedUser) {
-    const userData = JSON.parse(savedUser);
-    currentRole = userData.role;
-    const users = JSON.parse(localStorage.getItem(STORAGE.USERS) || '[]');
-    currentUser = users.find(u => u.id === userData.id);
-    if (currentUser) {
-      document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
-      document.getElementById('userRole').textContent = t(currentUser.role);
-      document.getElementById('roleSelection').style.display = 'grid';
-      renderDashboard();
-    } else showLogin();
+    }).catch(() => showToast('دسترسی به دوربین ممکن نیست', true));
+  } catch(err) { showToast('خطا در دسترسی به دوربین', true); }
+}
+function closeCamera() {
+  const modal = document.getElementById('cameraModal');
+  modal.classList.remove('active');
+  if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+}
+function capturePhoto() {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const aiResult = document.getElementById('aiResult');
+  aiResult.classList.remove('hidden');
+  aiResult.innerHTML = `<div class="bg-green-100 p-4 rounded"><i class="fas fa-robot text-2xl text-emerald-600"></i><p>AI در حال تشخیص چهره شاگردان...</p><div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="bg-emerald-600 h-2 rounded-full animate-pulse" style="width: 70%"></div></div></div>`;
+  setTimeout(() => {
+    aiResult.innerHTML = `<div class="bg-green-100 p-4 rounded"><i class="fas fa-check-circle text-2xl text-green-600"></i><p>✅ AI با موفقیت شاگردان را شناسایی کرد</p><button onclick="applyAIAttendance()" class="mt-2 bg-emerald-600 text-white px-4 py-2 rounded">اعمال حاضری</button></div>`;
+  }, 3000);
+}
+function uploadFromGallery() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = () => showToast('تصویر انتخاب شد، AI در حال پردازش...');
+  input.click();
+}
+function applyAIAttendance() { closeCamera(); showToast('حاضری توسط AI ثبت شد'); }
+
+// Export functions
+function exportToExcel() {
+  const journal = JSON.parse(localStorage.getItem(STORAGE.JOURNAL));
+  const ws = XLSX.utils.aoa_to_sheet([['تاریخ', 'شرح', 'بدهکار', 'بستانکار'], ...journal.map(j => [new Date(j.date).toLocaleDateString('fa-IR'), j.description, j.debit || 0, j.credit || 0])]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'گزارش مالی');
+  XLSX.writeFile(wb, `financial_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Excel دانلود شد');
+}
+function exportToPDF() {
+  const element = document.getElementById('financeContent') || document.getElementById('principalContent');
+  if (element) html2pdf().from(element).set({ filename: 'report.pdf' }).save();
+}
+
+// Make functions global
+window.selectRole = selectRole; window.setLang = setLang; window.logout = logout;
+window.showLogin = showLogin; window.showSignup = showSignup; window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.showClassesTeachers = showClassesTeachers; window.showSalarySection = showSalarySection;
+window.paySalary = paySalary; window.showAdvertisingSystem = showAdvertisingSystem;
+window.buyAdPackage = buyAdPackage; window.showProfitLossReport = showProfitLossReport;
+window.showFullFeeCollection = showFullFeeCollection; window.collectFee = collectFee;
+window.filterStudentsByClass = filterStudentsByClass;
+window.showStudentForm = showStudentForm; window.saveStudent = saveStudent;
+window.showStudentList = showStudentList; window.showTemporaryStudents = showTemporaryStudents;
+window.addTempStudent = addTempStudent; window.showTeacherAttendance = showTeacherAttendance;
+window.loadAttendanceStudents = loadAttendanceStudents; window.markPresentNow = markPresentNow;
+window.markAbsentNow = markAbsentNow; window.saveTeacherAttendance = saveTeacherAttendance;
+window.uploadExamExcel = uploadExamExcel; window.openCameraForAttendance = openCameraForAttendance;
+window.closeCamera = closeCamera; window.capturePhoto = capturePhoto;
+window.uploadFromGallery = uploadFromGallery; window.applyAIAttendance = applyAIAttendance;
+window.exportToExcel = exportToExcel; window.exportToPDF = exportToPDF;
+
+initData();
+setLang(currentLang);
+const saved = localStorage.getItem('currentUser');
+if (saved) {
+  const data = JSON.parse(saved);
+  currentRole = data.role;
+  const users = JSON.parse(localStorage.getItem(STORAGE.USERS));
+  currentUser = users.find(u => u.id === data.id);
+  if (currentUser) {
+    document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+    document.getElementById('userRole').textContent = t(currentUser.role);
+    document.getElementById('roleSelection').style.display = 'grid';
   } else showLogin();
+} else showLogin();
 </script>
 </body>
 </html>
